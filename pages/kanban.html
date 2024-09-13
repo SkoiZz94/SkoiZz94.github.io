@@ -4,27 +4,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kanban Board</title>
-    <link rel="stylesheet" href="../styles.css">
-    <script src="../scripts/kanban.js" defer></script>
+    <!-- Link to External CSS -->
+    <link rel="stylesheet" href="../styles/kanban-styles.css">
 </head>
 <body>
-    <button class="home-button">
-        <img src="../images/logo.png" alt="Home">
-    </button>
-    
-    <div class="kanban-board">
-        <div class="column">
-            <h2>To Do</h2>
-            <div class="task">Task 1</div>
+	<!-- Back to Index Button -->
+	</div>
+	<div class="back-to-index">
+		<a href="../index.html">
+			<img src="../images/logo.png" alt="Back to Index" class="back-button">
+		</a>
+	</div>
+    <div class="clock-container">
+        <div class="clock clock-current">
+            <div class="clock-name">Current Time</div>
+            <div id="clockCurrent" class="clock-time"></div>
+            <div id="currentDate" class="clock-date"></div>
         </div>
-        <div class="column">
-            <h2>In Progress</h2>
-            <div class="task">Task 2</div>
+        <div class="clock">
+            <div class="clock-name">Europe</div>
+            <div id="clockEurope" class="clock-time"></div>
+            <div id="europeDate" class="clock-date"></div>
         </div>
-        <div class="column">
-            <h2>Done</h2>
-            <div class="task">Task 3</div>
+        <div class="clock">
+            <div class="clock-name">China</div>
+            <div id="clockChina" class="clock-time"></div>
+            <div id="chinaDate" class="clock-date"></div>
+        </div>
+        <div class="clock">
+            <div class="clock-name">Americas</div>
+            <div id="clockAmericas" class="clock-time"></div>
+            <div id="americasDate" class="clock-date"></div>
+        </div>
+        <div class="clock">
+            <div class="clock-name">Africa</div>
+            <div id="clockAfrica" class="clock-time"></div>
+            <div id="africaDate" class="clock-date"></div>
         </div>
     </div>
+
+    <div class="kanban-board">
+        <div class="column" id="todo">
+            <h2>To Do</h2>
+        </div>
+        <div class="column" id="inProgress">
+            <h2>In Progress</h2>
+        </div>
+        <div class="column" id="done">
+            <h2>Done</h2>
+        </div>
+        <div class="column" id="onHold">
+            <h2>On Hold</h2>
+        </div>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="newNote" placeholder="Enter title for a new task">
+        <button onclick="addNote()">Add</button>
+        <button class="export-btn" onclick="exportNotes()">Export Data</button>
+    </div>
+
+    <textarea class="temporary-notes" placeholder="Write temporary notes here..."></textarea>
+
+    <!-- Link to External JS -->
+    <script src="../scripts/kanban.js"></script>
+	
+	
 </body>
 </html>
