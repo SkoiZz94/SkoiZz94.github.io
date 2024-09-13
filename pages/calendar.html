@@ -4,14 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendar</title>
-    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../styles/calendar-styles.css">
 </head>
 <body>
-    <button class="home-button">
-        <img src="../images/logo.png" alt="Home">
-    </button>
+    <!-- Back to Index Button -->
+    <div class="back-to-index">
+        <a href="../index.html">
+            <img src="../images/logo.png" alt="Back to Index" class="back-button">
+        </a>
+    </div>
 
-    <h1>Calendar Page</h1>
-    <!-- Add calendar content here -->
+    <div class="calendar-container">
+        <h2>Under Construction</h2>
+        <div id="calendar" class="calendar">
+            <!-- Hours will be populated here -->
+        </div>
+        <button class="add-event-btn" onclick="addEvent()">Add Event</button>
+    </div>
+
+    <script src="../scripts/calendar.js"></script>
 </body>
 </html>
