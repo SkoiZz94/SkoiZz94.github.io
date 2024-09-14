@@ -139,7 +139,7 @@ input {
 }
 
 .back-button {
-    width: 60px; /* Adjust size as needed */
+    width: 50px; /* Adjust size as needed */
     height: 50px; /* Adjust size as needed */
     border: none;
     cursor: pointer;
