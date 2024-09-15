@@ -43,23 +43,26 @@ window.onload = loadNotesFromLocalStorage;
 
 // Load notes from localStorage
 function loadNotesFromLocalStorage() {
-            const savedNotes = localStorage.getItem('kanbanNotes');
-            if (savedNotes) {
-                notesData = JSON.parse(savedNotes);
+    const savedNotes = localStorage.getItem('kanbanNotes');
+    if (savedNotes) {
+        notesData = JSON.parse(savedNotes);
 
-                // Remove all tasks from the Done column
-                notesData = notesData.filter(note => note.column !== 'done' && !note.deleted);
+        // Remove all existing tasks in the DOM to prevent duplication
+        document.querySelectorAll('.note').forEach(note => note.remove());
 
-                // Display remaining tasks in their respective columns
-                notesData.forEach(note => {
-                    const noteElement = createNoteElement(note);
-                    document.getElementById(note.column).appendChild(noteElement);
-                });
+        // Remove tasks from the 'done' column and not already deleted
+        notesData = notesData.filter(note => note.column !== 'done' && !note.deleted);
 
-                // Save the filtered notes back to localStorage after clearing Done tasks
-                saveNotesToLocalStorage();
-            }
-        }
+        // Display the remaining tasks in their respective columns
+        notesData.forEach(note => {
+            const noteElement = createNoteElement(note);
+            document.getElementById(note.column).appendChild(noteElement);
+        });
+
+        // Save the filtered notes back to localStorage after clearing Done tasks
+        saveNotesToLocalStorage();
+    }
+}
 
 // Save notes to localStorage
 function saveNotesToLocalStorage() {
@@ -156,34 +159,44 @@ function createNoteElement(content) {
         }
 
 function addNote() {
-            const noteText = document.getElementById('newNote').value;
-            if (noteText.trim() !== '') {
-                const id = Date.now(); // unique ID based on timestamp
-                const timestamp = new Date().toLocaleString();
-                const newNote = {
-                    id,
-                    title: noteText,
-                    notes: "",
-                    column: 'todo',  // Initial column set to 'todo'
-                    actions: [{ action: 'Created', timestamp }]
-                };
-                notesData.push(newNote);
-                const noteElement = createNoteElement(newNote);
-                document.getElementById('todo').appendChild(noteElement);
-                document.getElementById('newNote').value = ''; // Clear input
-                saveNotesToLocalStorage();  // Save after adding a note
-            }
-        }
+    const noteText = document.getElementById('newNote').value;
+    if (noteText.trim() !== '') {
+        const id = Date.now(); // unique ID based on timestamp
+        const timestamp = new Date().toLocaleString();
+        const newNote = {
+            id,
+            title: noteText,
+            notes: "",
+            column: 'todo',  // Initial column set to 'todo'
+            actions: [{ action: 'Created', timestamp }]
+        };
+
+        // Add the new note to notesData and save it to localStorage before displaying it
+        notesData.push(newNote);
+        saveNotesToLocalStorage();
+
+        // Now append it to the DOM
+        const noteElement = createNoteElement(newNote);
+        document.getElementById('todo').appendChild(noteElement);
+        
+        document.getElementById('newNote').value = ''; // Clear input
+    }
+}
 
 function deleteNote(id) {
-            const noteIndex = notesData.findIndex(n => n.id === id);
-            if (noteIndex !== -1) {
-                notesData[noteIndex].deleted = true;
-                const timestamp = new Date().toLocaleString();
-                notesData[noteIndex].actions.push({ action: 'Deleted', timestamp });
-                saveNotesToLocalStorage();  // Save after deletion
-            }
-        }
+    const noteIndex = notesData.findIndex(n => n.id === id);
+    if (noteIndex !== -1) {
+        notesData[noteIndex].deleted = true;
+        const timestamp = new Date().toLocaleString();
+        notesData[noteIndex].actions.push({ action: 'Deleted', timestamp });
+
+        // Save the updated notesData back to localStorage
+        saveNotesToLocalStorage();
+        
+        // Remove the note from the DOM
+        document.querySelector(`[data-id='${id}']`).remove();
+    }
+}
 
 function updateNoteColumn(id, oldColumn, newColumn) {
             const note = notesData.find(n => n.id === id);
