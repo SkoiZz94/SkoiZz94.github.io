@@ -32,7 +32,6 @@ form {
 label {
     display: block;
     margin-top: 15px;
-    font-weight: bold;
     color: #c5c5c5;
 }
 
@@ -58,7 +57,6 @@ button {
     border: none;
     border-radius: 8px;
     font-size: 1.1em;
-    font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.2s;
 }
@@ -80,14 +78,25 @@ button:active {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     color: #e0e0e0;
     max-width: 400px;
-    width: 100%;
+    width: auto; /* Changed to auto for dynamic sizing */
     text-align: left;
+    display: inline-block; /* Allows resizing based on content */
 }
 
 /* Results Headings */
 #results h2, #results h3 {
     color: #4caf50;
     margin: 5px 0;
+}
+
+/* Specific Text Styles */
+.bold {
+    font-weight: bold;
+}
+
+/* Score Styling */
+.score {
+    display: inline; /* Keeps the score inline */
 }
 
 /* Logo Title Container (if used) */

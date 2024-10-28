@@ -232,7 +232,7 @@ function viewNoteHistory(id) {
 function exportNotes() {
             let fileContent = `Kanban Board Export - ${getCurrentDate()}\n\n`;
 
-            ['todo', 'inProgress', 'onHold'].forEach(columnId => {
+            ['todo', 'inProgress', 'done', 'onHold'].forEach(columnId => {
                 const notes = Array.from(document.getElementById(columnId).querySelectorAll('.note'));
                 notes.forEach(noteElement => {
                     const noteId = parseInt(noteElement.dataset.id);
