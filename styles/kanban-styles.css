@@ -1,112 +1,137 @@
-/* General Styles */
 body {
     font-family: Arial, sans-serif;
     background-color: #1e1e1e;
     color: #e0e0e0;
     margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+    padding: 20px;
 }
 
-/* Centered Form Container */
-.index {
+.kanban-board {
+    display: flex;
+    justify-content: space-between;
+}
+
+.column {
+    background-color: #2c2c2c;
+    border-radius: 8px;
+    padding: 10px;
+    width: 24%;
+    min-height: 400px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    overflow: auto;
+}
+
+.note {
+    background-color: #333;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px 0;
+    color: #fff;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    text-align: center;
+    cursor: grab;
 }
 
-/* Form Container */
-form {
-    background-color: #2b2b2b;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    max-width: 400px;
-    width: 100%;
-}
-
-/* Labels and Inputs */
-label {
-    display: block;
-    margin-top: 15px;
+.note-content {
     font-weight: bold;
-    color: #c5c5c5;
 }
 
-select, input[type="number"] {
-    width: 100%;
-    padding: 10px;
+.note-text {
     margin-top: 5px;
-    background-color: #333;
-    color: #e0e0e0;
-    border: 1px solid #555;
-    border-radius: 5px;
-    outline: none;
-    font-size: 1em;
 }
 
-/* Form Button Styles */
+.timestamp {
+    margin-top: 10px;
+    font-size: 0.8em;
+    color: #888;
+}
+
 button {
-    margin-top: 20px;
-    width: 100%;
-    padding: 12px;
+    margin-left: 10px;
     background-color: #4caf50;
     color: #fff;
     border: none;
-    border-radius: 8px;
-    font-size: 1.1em;
-    font-weight: bold;
+    border-radius: 5px;
+    padding: 5px 10px;
     cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
 }
 
 button:hover {
-    background-color: #45a049;
+    opacity: 0.8;
 }
 
-button:active {
-    transform: scale(0.98);
+input {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    margin-right: 10px;
+    font-size: 1em;
 }
 
-/* Results Display */
-#results {
-    margin-top: 30px;
-    background-color: #2b2b2b;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    color: #e0e0e0;
-    max-width: 400px;
+.export-btn {
+    background-color: #2196f3;
+    margin-left: 10px;
+}
+
+.edit-delete {
+    display: flex;
+    justify-content: flex-end;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.edit-delete button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.controls {
+    margin-top: 20px;
+}
+
+.temporary-notes {
     width: 100%;
-    text-align: left;
+    height: 100px;
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #333;
+    background-color: #2c2c2c;
+    border-radius: 5px;
+    color: #e0e0e0;
+    overflow: auto;
+    box-sizing: border-box;
 }
 
-/* Results Headings */
-#results h2, #results h3 {
-    color: #4caf50;
+.clock-container {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.clock {
+    text-align: center;
+    color: #fff;
+    margin: 0 10px;
+}
+
+.clock-name {
+    font-size: 0.9em;
+}
+
+.clock-time {
+    font-size: 1.5em;
     margin: 5px 0;
 }
 
-/* Logo Title Container (if used) */
-.logo-title-container {
-    margin-bottom: 30px;
+.clock-date {
+    font-size: 0.8em;
 }
 
-.logo-title-container img {
-    width: 200px;
-    height: auto;
-}
-
-.logo-title-container h1 {
+.clock-current .clock-time {
     font-size: 2em;
-    margin: 10px 0;
-    color: #4caf50;
 }
 
-/* Home Button */
 .back-to-index {
     position: fixed;
     top: 20px;
