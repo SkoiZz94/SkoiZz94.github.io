@@ -98,3 +98,11 @@ button:active {
 .home-button:hover img {
     opacity: 0.8;
 }
+
+.back-button {
+    width: 50px; /* Adjust size as needed */
+    height: 50px; /* Adjust size as needed */
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
