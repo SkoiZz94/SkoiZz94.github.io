@@ -99,10 +99,12 @@ button:active {
     opacity: 0.8;
 }
 
+/* Home Button */
 .back-to-index {
     position: fixed;
     top: 20px;
     left: 20px;
+    z-index: 1000;
 }
 
 .back-button {
