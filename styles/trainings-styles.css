@@ -120,3 +120,19 @@ button:active {
 .back-button:hover {
     opacity: 0.8;
 }
+
+/* Logo Title Container (if used) */
+.logo-title-container {
+    margin-bottom: 30px;
+}
+
+.logo-title-container img {
+    width: 200px;
+    height: auto;
+}
+
+.logo-title-container h1 {
+    font-size: 2em;
+    margin: 10px 0;
+    color: #ffffff;
+}

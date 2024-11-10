@@ -52,7 +52,7 @@ button {
     margin-top: 20px;
     width: 100%;
     padding: 12px;
-    background-color: #4caf50;
+    background-color: #fb0000;
     color: #fff;
     border: none;
     border-radius: 8px;
@@ -62,7 +62,7 @@ button {
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: #690000;
 }
 
 button:active {
@@ -112,7 +112,7 @@ button:active {
 .logo-title-container h1 {
     font-size: 2em;
     margin: 10px 0;
-    color: #4caf50;
+    color: #ffffff;
 }
 
 /* Home Button */
@@ -128,8 +128,4 @@ button:active {
     border: none;
     cursor: pointer;
     transition: opacity 0.3s;
-}
-
-.back-button:hover {
-    opacity: 0.8;
 }
