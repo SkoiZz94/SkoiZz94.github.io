@@ -5,7 +5,7 @@ const monthNames = [
 ];
 
 async function fetchWeekdayHolidays(year, month) {
-    const response = await fetch(`https://date.nager.at/Api/v2/PublicHolidays/${year}/PT`);
+    const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/PT`);
     if (response.ok) {
         const holidays = await response.json();
         // Filter holidays that are in the specified month, fall on weekdays, and are national (no 'counties' field)
