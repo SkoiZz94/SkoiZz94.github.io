@@ -301,10 +301,10 @@ function getColumnName(columnId) {
 
             // Timezone Offsets
             const timezones = {
-                Europe: { offset: 0, name: 'Europe' },
-                China: { offset: 7, name: 'China' },
-                Americas: { offset: -6, name: 'Americas' },
-                Africa: { offset: 1, name: 'Africa' }
+                Europe: { offset: 1, name: 'Europe' },
+                China: { offset: 8, name: 'China' },
+                Americas: { offset: -5, name: 'Americas' },
+                Africa: { offset: 2, name: 'Africa' }
             };
 
             // Helper function to get time with offset
