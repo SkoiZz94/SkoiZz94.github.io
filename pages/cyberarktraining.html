@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CyberArk Training Quiz</title>
+  <link rel="stylesheet" href="../styles/cyberark-styles.css"/>
+</head>
+<body class="index">
+  <!-- Optional back/home button -->
+  <div class="back-to-index">
+		<a href="../pages/trainingsindex.html">
+			<img src="../images/homebutton.png" alt="Back to Index" class="back-button">
+		</a>
+	</div>
+
+  <div class="logo-title-container">
+    <h1>CyberArk Training – Interactive Quiz</h1>
+  </div>
+
+  <div class="quiz-wrapper">
+    <div class="quiz-container">
+      <div id="loader" class="note">Loading questions…</div>
+      <div id="load-error" class="hidden fail" role="alert"></div>
+
+      <div id="quiz" class="hidden">
+        <div id="question-container">
+          <div class="question" id="question-text"></div>
+          <div class="note hidden" id="question-note"></div>
+          <div class="answers" id="answers-container"></div>
+        </div>
+
+        <div class="question-nav" id="question-nav"></div>
+
+        <div class="navigation">
+          <button id="prev-btn" type="button">Previous</button>
+          <button id="flag-btn" type="button">Flag Question</button>
+          <button id="next-btn" type="button">Next</button>
+        </div>
+        <button id="submit-btn" class="hidden" type="button">Submit Quiz</button>
+      </div>
+
+      <div id="results" class="hidden">
+        <h2>Results</h2>
+        <div id="grade"></div>
+        <p>Correct: <span id="correct-count"></span></p>
+        <p>Incorrect: <span id="incorrect-count"></span></p>
+
+        <div class="button-container" style="margin-top:10px;">
+          <button id="review-btn" type="button">Review Questions</button>
+          <button id="retry-btn" type="button">Retry Test</button>
+        </div>
+      </div>
+
+      <div id="review" class="hidden">
+        <h2>Review</h2>
+        <div id="review-container"></div>
+        <div class="button-container" style="margin-top:10px;">
+          <button id="retry-from-review-btn" type="button">Retry Test</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../scripts/cyberark.js" defer></script>
+</body>
+</html>
