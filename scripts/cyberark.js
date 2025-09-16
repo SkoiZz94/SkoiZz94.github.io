@@ -1,4 +1,4 @@
-// test
+// ===== Config (GitHub Pages) =====
 const JSON_URL = '/data/questions.json';
 const PASS_THRESHOLD = 80;
 
@@ -13,7 +13,6 @@ let flaggedQuestions = new Set();
 document.addEventListener('DOMContentLoaded', async () => {
   show('#loader');
   try {
-    // Fetch JSON directly from site root
     const res = await fetch(JSON_URL, { cache: 'no-store' });
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
     const parsed = await res.json();
@@ -27,8 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     hide('#loader');
     const box = document.querySelector('#load-error');
-    box.textContent = `Failed to load questions: ${err.message}. ` +
-      `Confirm the file exists at ${JSON_URL}`;
+    box.textContent = `Failed to load questions: ${err.message}. Confirm the file exists at ${JSON_URL}`;
     box.classList.remove('hidden');
     console.error('Quiz JSON load failure:', err);
   }
@@ -127,7 +125,7 @@ function buildQuestionNav() {
 function renderQuestion() {
   const q = currentQuestions[currentQuestionIndex];
   const questionText = $('#question-text');
-  const answersContainer = $('#answers-container'];
+  const answersContainer = $('#answers-container'); // <-- fixed here
   const note = $('#question-note');
 
   questionText.textContent = q.question;
