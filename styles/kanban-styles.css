@@ -1,4 +1,10 @@
-/* ===== Base ===== */
+/* ===== Global reset/helpers ===== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 body {
     font-family: Arial, sans-serif;
     background-color: #1e1e1e;
@@ -7,33 +13,30 @@ body {
     padding: 20px;
 }
 
-/* ===== Layout ===== */
+/* ===== Board layout (Grid keeps columns aligned) ===== */
 .kanban-board {
-    display: flex;
-    gap: 12px;               /* spacing between columns */
-    justify-content: space-between;
-    flex-wrap: wrap;         /* allow wrapping on smaller screens */
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* always align 4 columns on wide screens */
+    gap: 16px;                              /* consistent spacing between columns */
 }
 
+/* Columns */
 .column {
     background-color: #2c2c2c;
     border-radius: 8px;
     padding: 10px;
-    width: 24%;
     min-height: 400px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     overflow: auto;
-    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
     position: relative;
 }
 
-/* Visual feedback target for touch/drag (added by JS) */
+/* Visual feedback during touch/drag (added by JS) */
 .column.drop-hover {
     outline: 2px dashed #888;
     outline-offset: -6px;
-    background: linear-gradient(0deg, rgba(255,255,255,0.04), rgba(255,255,255,0.04));
 }
-
 
 /* ===== Notes ===== */
 .note {
@@ -46,7 +49,7 @@ body {
     flex-direction: column;
     cursor: grab;
 
-    /* Important for tablet drag */
+    /* important for tablet drag */
     touch-action: none;          /* allow preventing scroll during touch-drag */
     user-select: none;           /* avoid text selection while dragging */
     -webkit-user-select: none;
@@ -199,15 +202,19 @@ input {
 
 /* ===== Responsiveness ===== */
 @media (max-width: 1024px) {
+    .kanban-board {
+        grid-template-columns: repeat(2, 1fr); /* two columns on tablets */
+    }
     .column {
-        width: calc(50% - 6px); /* two columns on tablets */
         min-height: 340px;
     }
 }
 
 @media (max-width: 640px) {
+    .kanban-board {
+        grid-template-columns: 1fr;           /* single column on phones */
+    }
     .column {
-        width: 100%;            /* single column on phones */
         min-height: 300px;
     }
 }
