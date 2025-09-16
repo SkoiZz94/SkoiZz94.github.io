@@ -1,3 +1,6 @@
+/***********************
+ * Kanban Board JS (desktop + touch, with button tap fixes)
+ ***********************/
 let notesData = [];
 let deletedNotes = []; // reserved if you want to use later
 
@@ -85,7 +88,6 @@ function saveNotesToLocalStorage() {
  ***********************/
 let draggedItem = null;
 
-// desktop HTML5 DnD for mouse/trackpad
 document.querySelectorAll('.column').forEach(column => {
   // allow drop
   column.addEventListener('dragover', e => e.preventDefault());
@@ -111,14 +113,15 @@ document.querySelectorAll('.column').forEach(column => {
 function enableTouchDrag(noteEl) {
   // Start
   noteEl.addEventListener('touchstart', (e) => {
+    if (e.target.closest('button')) return; // let buttons receive taps
     draggedItem = noteEl;
-    // prevent page scroll while dragging
-    e.preventDefault();
+    e.preventDefault(); // prevent scroll while dragging
   }, { passive: false });
 
   // Move
   noteEl.addEventListener('touchmove', (e) => {
-    e.preventDefault(); // keep control, avoid scrolling
+    if (!draggedItem) return;
+    e.preventDefault();
     const t = e.touches[0];
     const elUnderFinger = document.elementFromPoint(t.clientX, t.clientY);
     const hoveredCol = elUnderFinger && elUnderFinger.closest('.column');
@@ -131,6 +134,8 @@ function enableTouchDrag(noteEl) {
 
   // End (drop)
   noteEl.addEventListener('touchend', (e) => {
+    if (!draggedItem) return;
+
     const t = e.changedTouches[0];
     const elUnderFinger = document.elementFromPoint(t.clientX, t.clientY);
     const dropCol = elUnderFinger && elUnderFinger.closest('.column');
@@ -138,7 +143,7 @@ function enableTouchDrag(noteEl) {
     // clear feedback
     document.querySelectorAll('.column').forEach(c => c.classList.remove('drop-hover'));
 
-    if (draggedItem && dropCol) {
+    if (dropCol) {
       const oldColumnId = draggedItem.parentElement.id;
       const newColumnId = dropCol.id;
       const noteId = parseInt(draggedItem.dataset.id, 10);
@@ -181,7 +186,7 @@ function createNoteElement(content) {
   editButton.textContent = "✏️";
   editButton.style.color = "#81c784";
   editButton.title = "Edit";
-  editButton.onclick = function () {
+  editButton.onclick = function (e) {
     const newNotes = prompt("Edit notes:", content.notes || "");
     if (newNotes !== null) {
       noteText.textContent = newNotes;
@@ -194,7 +199,7 @@ function createNoteElement(content) {
   deleteButton.textContent = "❌";
   deleteButton.style.color = "#e57373";
   deleteButton.title = "Delete";
-  deleteButton.onclick = function () {
+  deleteButton.onclick = function (e) {
     if (confirm("Are you sure you want to delete this task?")) {
       deleteNote(content.id);
       note.remove();
@@ -210,6 +215,13 @@ function createNoteElement(content) {
     viewNoteHistory(content.id);
   };
 
+  // prevent drags from starting on buttons, and make taps reliable on touch
+  [editButton, deleteButton, historyButton].forEach(btn => {
+    btn.draggable = false;
+    btn.addEventListener('mousedown', e => e.stopPropagation());
+    btn.addEventListener('touchstart', e => { e.stopPropagation(); }, { passive: true });
+  });
+
   editDeleteContainer.appendChild(editButton);
   editDeleteContainer.appendChild(deleteButton);
   editDeleteContainer.appendChild(historyButton);
@@ -219,8 +231,12 @@ function createNoteElement(content) {
   note.appendChild(timestamp);
   note.appendChild(editDeleteContainer);
 
-  // desktop drag start
-  note.addEventListener('dragstart', () => {
+  // desktop drag start (ignore when starting from a button)
+  note.addEventListener('dragstart', (e) => {
+    if (e.target.closest('button')) {
+      e.preventDefault();
+      return;
+    }
     draggedItem = note;
   });
 
