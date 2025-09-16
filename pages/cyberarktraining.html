@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="../styles/cyberark-styles.css"/>
 </head>
 <body class="index">
-  <!-- Optional back/home button -->
   <div class="back-to-index">
 		<a href="../pages/trainingsindex.html">
 			<img src="../images/homebutton.png" alt="Back to Index" class="back-button">
@@ -30,14 +29,16 @@
           <div class="answers" id="answers-container"></div>
         </div>
 
-        <div class="question-nav" id="question-nav"></div>
+        <!-- Removed question-nav buttons -->
 
         <div class="navigation">
           <button id="prev-btn" type="button">Previous</button>
           <button id="flag-btn" type="button">Flag Question</button>
           <button id="next-btn" type="button">Next</button>
         </div>
-        <button id="submit-btn" class="hidden" type="button">Submit Quiz</button>
+
+        <!-- Submit is always visible now -->
+        <button id="submit-btn" type="button">Submit Quiz</button>
       </div>
 
       <div id="results" class="hidden">
@@ -45,6 +46,7 @@
         <div id="grade"></div>
         <p>Correct: <span id="correct-count"></span></p>
         <p>Incorrect: <span id="incorrect-count"></span></p>
+        <p>Answered: <span id="answered-count"></span>/<span id="total-count"></span></p>
 
         <div class="button-container" style="margin-top:10px;">
           <button id="review-btn" type="button">Review Questions</button>

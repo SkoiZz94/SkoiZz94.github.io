@@ -88,7 +88,6 @@ function initializeQuiz() {
   });
 
   currentQuestionIndex = 0;
-  buildQuestionNav();
   renderQuestion();
   updateNavigation();
 }
@@ -106,26 +105,10 @@ function shuffleArray(arr){
 }
 
 // ===== Rendering =====
-function buildQuestionNav() {
-  const nav = $('#question-nav');
-  nav.innerHTML = '';
-  currentQuestions.forEach((_, idx) => {
-    const btn = document.createElement('button');
-    btn.className = 'question-nav-btn';
-    btn.textContent = idx + 1;
-    btn.addEventListener('click', () => {
-      currentQuestionIndex = idx;
-      renderQuestion();
-      updateNavigation();
-    });
-    nav.appendChild(btn);
-  });
-}
-
 function renderQuestion() {
   const q = currentQuestions[currentQuestionIndex];
   const questionText = $('#question-text');
-  const answersContainer = $('#answers-container'); // <-- fixed here
+  const answersContainer = $('#answers-container');
   const note = $('#question-note');
 
   questionText.textContent = q.question;
@@ -179,27 +162,17 @@ function renderQuestion() {
 function updateNavigation() {
   const prevBtn = $('#prev-btn');
   const nextBtn = $('#next-btn');
-  const submitBtn = $('#submit-btn');
   const flagBtn = $('#flag-btn');
+  const submitBtn = $('#submit-btn');
 
   prevBtn.disabled = currentQuestionIndex === 0;
   nextBtn.disabled = currentQuestionIndex === currentQuestions.length - 1;
 
-  if (currentQuestionIndex === currentQuestions.length - 1) {
-    submitBtn.classList.remove('hidden');
-  } else {
-    submitBtn.classList.add('hidden');
-  }
+  // Submit is always visible now
+  submitBtn.classList.remove('hidden');
 
+  // Update flag button text
   flagBtn.textContent = flaggedQuestions.has(currentQuestionIndex) ? 'Unflag Question' : 'Flag Question';
-
-  const navButtons = document.querySelectorAll('.question-nav-btn');
-  navButtons.forEach((btn, idx) => {
-    btn.classList.remove('current', 'answered', 'flagged');
-    if (idx === currentQuestionIndex) btn.classList.add('current');
-    if (userAnswers[idx]?.length) btn.classList.add('answered');
-    if (flaggedQuestions.has(idx)) btn.classList.add('flagged');
-  });
 }
 
 // ===== Results & Review =====
@@ -207,23 +180,55 @@ function showResults() {
   hide('#quiz');
   show('#results');
 
-  let correctCount = 0;
-  userAnswers.forEach((ua, idx) => {
-    const q = currentQuestions[idx];
-    const c = q.correctIndices;
-    if (ua.length === c.length && ua.every((v, i) => v === c[i])) correctCount++;
+  const total = currentQuestions.length;
+  const answeredIdx = [];
+  const consideredIdxSet = new Set();
+
+  // answered = user selected something
+  userAnswers.forEach((ua, i) => {
+    if (ua && ua.length > 0) answeredIdx.push(i);
   });
 
-  const incorrect = userAnswers.length - correctCount;
-  const pct = (correctCount / userAnswers.length) * 100;
-  const passed = pct >= PASS_THRESHOLD;
+  // considered = answered OR flagged
+  answeredIdx.forEach(i => consideredIdxSet.add(i));
+  flaggedQuestions.forEach(i => consideredIdxSet.add(i));
 
+  const consideredIdx = Array.from(consideredIdxSet.values()).sort((a,b)=>a-b);
+
+  let correctCount = 0;
+  let incorrectCount = 0;
+
+  consideredIdx.forEach(i => {
+    const q = currentQuestions[i];
+    const ua = userAnswers[i] || [];
+    const correct = q.correctIndices;
+
+    const answered = ua.length > 0;
+    const isCorrect = answered &&
+      ua.length === correct.length &&
+      ua.every((v, idx) => v === correct[idx]);
+
+    if (isCorrect) correctCount++;
+    else incorrectCount++; // flagged w/o answer OR answered incorrectly
+  });
+
+  const answeredCount = answeredIdx.length;
+  const consideredCount = consideredIdx.length;
+
+  const pct = consideredCount > 0 ? (correctCount / consideredCount) * 100 : 0;
+  const passed = consideredCount > 0 ? pct >= PASS_THRESHOLD : false;
+
+  // Fill UI
   const grade = $('#grade');
-  grade.textContent = `Score: ${pct.toFixed(1)}% — ${passed ? 'PASS' : 'FAIL'}`;
-  grade.className = passed ? 'pass' : 'fail';
+  grade.textContent = consideredCount > 0
+    ? `Score: ${pct.toFixed(1)}% — ${passed ? 'PASS' : 'FAIL'}`
+    : `Score: 0.0% — (No answered/flagged questions)`;
+  grade.className = consideredCount > 0 && passed ? 'pass' : 'fail';
 
   $('#correct-count').textContent = correctCount;
-  $('#incorrect-count').textContent = incorrect;
+  $('#incorrect-count').textContent = incorrectCount;
+  $('#answered-count').textContent = answeredCount;
+  $('#total-count').textContent = total;
 }
 
 function showReview() {
@@ -232,10 +237,13 @@ function showReview() {
   const container = $('#review-container');
   container.innerHTML = '';
 
+  // Only show answered questions
   currentQuestions.forEach((q, idx) => {
     const ua = userAnswers[idx];
-    const c = q.correctIndices;
-    const isCorrect = ua.length === c.length && ua.every((v,i)=>v===c[i]);
+    if (!ua || ua.length === 0) return; // skip unanswered
+
+    const correct = q.correctIndices;
+    const isCorrect = ua.length === correct.length && ua.every((v,i)=>v===correct[i]);
 
     const item = document.createElement('div');
     item.className = `review-item ${isCorrect ? 'correct' : 'incorrect'}`;
@@ -257,7 +265,7 @@ function showReview() {
       row.className = 'review-answer';
 
       const userSelected = ua.includes(aIdx);
-      const isCorrectAns = c.includes(aIdx);
+      const isCorrectAns = correct.includes(aIdx);
 
       if (userSelected && isCorrectAns) {
         row.classList.add('user-correct');
@@ -276,6 +284,13 @@ function showReview() {
 
     container.appendChild(item);
   });
+
+  if (!container.children.length) {
+    const none = document.createElement('div');
+    none.className = 'note';
+    none.textContent = 'No answered questions to review.';
+    container.appendChild(none);
+  }
 }
 
 // ===== Events =====
