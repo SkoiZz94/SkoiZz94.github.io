@@ -66,30 +66,55 @@ A browser-based **Kanban task board** with drag-and-drop (desktop + touch), note
 ## 3. WIM Calculator (`wincalc.js`)
 
 ### Overview
-A calculator that computes an employee’s attendance score for a given month in **Portugal**, taking into account:
-- Weekdays,
-- National holidays (via [Nager.Date API](https://date.nager.at/)),
-- Vacation days.
+The **Weekly Individual Measurement (WIM Calculator)** computes an employee’s **office attendance and compliance** for a given **week**, based on actual entry/exit times, local holidays, and selected vacation days.  
+It is designed for **Portugal**, integrating directly with the [Nager.Date API](https://date.nager.at/) to fetch official public holidays.
 
 ### Key Features
-- **Input:**
-  - Month number (`1–12`),
-  - Vacation days,
-  - Workdays attended.
-- **Processing:**
-  - Counts weekdays in month.
-  - Fetches and filters holidays:
-    - Only **national** (no regional holidays).
-    - Only those on weekdays.
-  - Subtracts holidays + vacation days from available workdays.
-- **Scoring:**
-  - Score = `(diasPresentes / diasDisponiveis) × 5`.
-  - Color-coded result:
-    - Red: `< 2`,
-    - Yellow: `2 – 3`,
-    - Green: `> 3`.
-- **Output:**
-  - Summary of weekdays, holidays (with dates and names), available days, and score.
+
+#### Input
+- **Week selection:** pick any date to automatically load its full Monday–Friday range.
+- **Automatic holiday detection:** retrieves official Portuguese holidays within the selected week.
+- **Manual vacation selection:** mark individual days as *Férias* (vacation).
+- **Work hours entry:** specify daily **Entrada** and **Saída** times in 24h format (`07:00–19:00` window).
+  - Hours outside this window are ignored.
+  - Lunch break of 1 hour is automatically deducted for days > 4h.
+
+#### Processing
+- Fetches and filters holidays:
+  - Only **national weekday holidays** (no regional or weekend holidays).
+- Blocks entry fields automatically for holidays.
+- Disables *Férias* checkbox on holidays.
+- Calculates:
+  - **Total valid office hours** (07:00–19:00, minus lunch).
+  - **Days present in office**.
+  - **Vacation days**.
+  - **Available workdays** (`5 - holidays - vacation days`).
+
+#### Compliance Evaluation
+Compares total hours against required thresholds:
+
+| Requirement | Non-Compliant (Red) | Warning (Yellow) | Compliant (Green) |
+|--------------|--------------------|------------------|------------------|
+| **2 dias / 16h** | `<16h` | `≥16h & <18h` | `≥18h` |
+| **3 dias / 24h** | `<24h` | `≥24h & <27h` | `≥27h` |
+
+#### Visual Indicators
+- **Feriado** rows: subtle **orange background**.
+- **Férias** rows: subtle **blue background**.
+- **Compliance colors:** red, yellow, and green per rule.
+- **Results summary** includes:
+  - Week range + ISO week number (e.g., `Semana: 29 de Dezembro (2025) a 2 de Janeiro (2026) – W01`)
+  - List of holidays with names.
+  - Days of vacation.
+  - Available workdays.
+  - Days present in the office.
+  - Total valid hours and compliance status.
+
+#### Output
+Displays a clean, structured weekly report:
+- All calculated metrics.
+- Visual compliance indicators for both rules (2-day and 3-day WIM targets).
+- Contextual notes clarifying the hour rules (window + lunch break).
 
 ### Utilities
 - `contarDiasDeSemana(mes, ano)` – counts weekdays in a month.

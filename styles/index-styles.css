@@ -120,3 +120,18 @@ button:active {
 .back-button:hover {
     opacity: 0.8;
 }
+
+.vacation-day {
+  color: #3fa7ff;
+  font-weight: 600;
+}
+.disabled-vacation {
+  background-color: #1a1a1a;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ferias-label {
+  color: #ccc;
+  font-size: 0.85em;
+  margin-left: 6px;
+}

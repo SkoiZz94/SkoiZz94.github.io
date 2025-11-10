@@ -1,4 +1,4 @@
-:root{
+:root {
   --bg:#1e1e1e;
   --card:#2b2b2b;
   --muted:#c5c5c5;
@@ -8,158 +8,255 @@
   --ok:#00e676;
   --warn:#ffd700;
   --bad:#ff4c4c;
+  --holiday:#ffb74d;
+  --vacation:#3fa7ff;
 }
 
-*{ box-sizing: border-box; }
-html,body{ height:100%; margin:0; }
+/* ---------- Base Reset ---------- */
+* { box-sizing: border-box; }
+html, body { height:100%; margin:0; }
 
-body{
+body {
   font-family: Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
 }
 
-/* Home button */
-.back-to-index{
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  z-index: 10;
-}
-.back-button{
-  width: 36px;
-  height: auto;
-  opacity: .9;
-  transition: opacity .2s ease;
-}
-.back-button:hover{ opacity: 1; }
-
-/* Layout */
-.index{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  min-height:100vh;
-  padding: 56px 16px 24px;
-  text-align:center;
+/* ---------- Centered Main Container ---------- */
+.index {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 60px 16px;
+  text-align: center;
 }
 
-.logo-title-container h1{
+/* ---------- Header ---------- */
+.logo-title-container h1 {
   margin: 0 0 8px 0;
-  color:#fff;
+  color: #fff;
+  font-size: 2.2rem;
 }
-.date-info{ color:#9acd32; font-weight:bold; }
 
-form{
+.date-info {
+  color: #9acd32;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+}
+
+/* ---------- Form Card ---------- */
+form {
   background: var(--card);
   padding: 24px;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0,0,0,.3);
   max-width: 680px;
-  width:100%;
-  text-align:left;
-  margin-top: 16px;
+  width: 100%;
+  text-align: left;
 }
 
-label{
-  display:block;
-  margin-top:14px;
+/* ---------- Compact Date + Buttons Row ---------- */
+.controls-row {
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.controls-row label {
   color: var(--muted);
+  font-weight: bold;
+  display: block;
+  margin-bottom: 4px;
 }
 
-input[type="date"],
-input[type="number"],
-.time-input{
-  width:100%;
-  padding:10px 12px;
-  margin-top:6px;
-  background:#333;
+.controls-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.controls-inline input[type="date"] {
+  flex: 0 0 200px;
+  padding: 8px 10px;
+  background: #333;
   color: var(--text);
-  border:1px solid #555;
-  border-radius:6px;
-  font-size:1rem;
+  border: 1px solid #555;
+  border-radius: 6px;
+  font-size: 1rem;
 }
 
-.time-input.invalid{ border-color: var(--bad); }
-
-button{
-  margin-top:20px;
-  width:100%;
-  padding:12px;
+.controls-inline button {
+  flex: 0 0 130px;
+  margin: 0;
+  height: 40px;
   background: var(--accent);
-  color:#fff;
-  border:none;
-  border-radius:8px;
-  font-size:1.05rem;
-  cursor:pointer;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
   transition: background .2s, transform .1s;
 }
-button:hover{ background: var(--accent-hover); }
-button:active{ transform: scale(.98); }
+.controls-inline button:hover { background: var(--accent-hover); }
+.controls-inline button:active { transform: scale(.97); }
 
-#results{
+/* ---------- Home Button ---------- */
+/* Home button */
+.back-to-index{
+  position: fixed;
+  top: 20px;
+  left: 20px;
+}
+.back-button{
+  width: 50px;
+  height: 50px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.3s;
+  border-radius: 10px;
+  background: #2c2c2c;
+}
+.back-button:hover{ opacity: 0.8; }
+
+/* ---------- Week Range Label ---------- */
+.week-range {
+  margin-top: 10px;
+  margin-bottom: 18px;
+  font-weight: bold;
+  color: #9acd32;
+  text-align: left;
+}
+
+/* ---------- Time Inputs Grid ---------- */
+.times-grid {
+  display: grid;
+  grid-template-columns: 160px 80px 1fr 1fr;
+  align-items: center;
+  gap: 8px 10px;
+  margin-top: 10px;
+}
+
+.day-col {
+  color: #fff;
+  font-weight: bold;
+}
+
+.ferias-label {
+  color: var(--muted);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.time-input {
+  width: 100%;
+  text-align: center;
+  background: #333;
+  color: var(--text);
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 10px 12px;
+  height: 38px;
+  font-size: 1rem;
+  transition: border-color .15s, background .15s;
+}
+.time-input::placeholder { color: #777; }
+.time-input:focus {
+  outline: none;
+  border-color: #4c8dff;
+  background: #2e2e2e;
+}
+.time-input.invalid { border-color: var(--bad); }
+
+/* ---------- Disabled (Holiday / Vacation) ---------- */
+.disabled-holiday,
+.disabled-vacation {
+  opacity: 0.5;
+  background-color: #1a1a1a !important;
+  cursor: not-allowed;
+}
+
+/* ---------- Holiday / Vacation Indicators ---------- */
+.holiday-day { color: var(--holiday); font-weight: 700; }
+.vacation-day { color: var(--vacation); font-weight: 700; }
+.holiday-label { color: var(--holiday); margin-left: 4px; }
+
+/* ---------- Results Section ---------- */
+#results {
   margin-top: 24px;
   background: var(--card);
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0,0,0,.3);
   max-width: 860px;
-  width:100%;
-  text-align:left;
+  width: 100%;
+  text-align: left;
 }
 
-/* Grid layout */
-.grid{ display:grid; gap:10px; }
-.times-grid{
-  grid-template-columns: 120px 1fr 1fr;
-  align-items:center;
-  margin-top: 10px;
-}
-.day-col{ color:#fff; }
-.label-col{ color:#9aa0a6; font-weight:bold; }
-
-/* Compliance colors */
-.compliance-red { color: var(--bad); font-weight:bold; }
-.compliance-yellow { color: var(--warn); font-weight:bold; }
-.compliance-green { color: var(--ok); font-weight:bold; }
-
-/* Results layout */
-.results-row{
-  display:flex;
+.results-row {
+  display: flex;
   gap: 16px;
   margin-top: 14px;
   flex-wrap: wrap;
 }
-.result-box{
-  flex:1 1 280px;
-  background:#333;
-  padding:16px;
-  border-radius:8px;
+
+.result-box {
+  flex: 1 1 280px;
+  background: #333;
+  padding: 16px;
+  border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,.3);
-  text-align:center; /* center everything inside */
+  text-align: center;
 }
-.result-box h4{
-  color:#9acd32;
+
+.result-box h4 {
+  color: #9acd32;
   margin: 0 0 8px 0;
 }
 
-/* Centered thresholds row */
-.thresholds{
-  display:flex;
-  justify-content:center;
-  align-items:baseline;
-  gap:14px;
+/* ---------- Thresholds & Colors ---------- */
+.thresholds {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 14px;
   margin: 6px 0 2px;
   font-weight: bold;
 }
-.thresholds .sep{
-  color:#777;
-  font-weight: normal;
+.thresholds .sep { color: #777; font-weight: normal; }
+
+.compliance-red { color: var(--bad); font-weight: bold; }
+.compliance-yellow { color: var(--warn); font-weight: bold; }
+.compliance-green { color: var(--ok); font-weight: bold; }
+
+/* ---------- Footer note ---------- */
+small {
+  display: block;
+  margin-top: 12px;
+  color: #999;
+  font-size: 0.85rem;
 }
 
-.week-range{
-  margin-top:6px;
-  font-weight:bold;
-  color:#9acd32;
+/* ---------- Responsive Adjustments ---------- */
+@media (max-width: 720px) {
+  .controls-inline { flex-wrap: wrap; }
+  .controls-inline input[type="date"] { flex: 1 1 100%; }
+  .controls-inline button { flex: 1 1 100%; }
+  .times-grid { grid-template-columns: 1fr 1fr 1fr; }
+}
+
+.holiday-row {
+  background-color: rgba(255, 183, 77, 0.1);
+  border-radius: 6px;
+  padding: 4px 6px;
+}
+
+.vacation-row {
+  background: rgba(63, 167, 255, 0.12);
+  border-radius: 6px;
+  padding: 4px 6px;
 }
