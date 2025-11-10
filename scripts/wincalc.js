@@ -176,11 +176,11 @@ document.getElementById('holidayForm').onsubmit = async function(e){
 
   const evaluations = [
     {
-      ...evaluateRule("2 dias / 16h min", 16, 18, totalHours),
+      ...evaluateRule("2 Dias", 16, 18, totalHours),
       thresholds: thresholdsRow(16, 18)
     },
     {
-      ...evaluateRule("3 dias / 24h min", 24, 27, totalHours),
+      ...evaluateRule("3 Dias", 24, 27, totalHours),
       thresholds: thresholdsRow(24, 27)
     }
   ];
