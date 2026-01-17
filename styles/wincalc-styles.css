@@ -1,15 +1,15 @@
 :root {
-  --bg:#1e1e1e;
-  --card:#2b2b2b;
-  --muted:#c5c5c5;
-  --text:#e0e0e0;
-  --accent:#fb0000;
-  --accent-hover:#690000;
-  --ok:#00e676;
-  --warn:#ffd700;
-  --bad:#ff4c4c;
-  --holiday:#ffb74d;
-  --vacation:#3fa7ff;
+  --bg: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 50%, #0d0d0d 100%);
+  --card-bg: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(25, 25, 25, 0.95) 100%);
+  --muted: rgba(255, 255, 255, 0.6);
+  --text: #f5f5f5;
+  --button-bg: rgba(60, 60, 60, 0.6);
+  --button-hover: rgba(70, 70, 70, 0.8);
+  --ok: #00e676;
+  --warn: #ffd700;
+  --bad: #ff4c4c;
+  --holiday: #ffb74d;
+  --vacation: #3fa7ff;
 }
 
 /* ---------- Base Reset ---------- */
@@ -17,9 +17,13 @@
 html, body { height:100%; margin:0; }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
   background: var(--bg);
+  background-attachment: fixed;
+  background-size: 100% 100%;
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ---------- Centered Main Container ---------- */
@@ -49,10 +53,12 @@ body {
 
 /* ---------- Form Card ---------- */
 form {
-  background: var(--card);
-  padding: 24px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,.3);
+  background: var(--card-bg);
+  padding: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(30px);
   max-width: 680px;
   width: 100%;
   text-align: left;
@@ -79,47 +85,84 @@ form {
 
 .controls-inline input[type="date"] {
   flex: 0 0 200px;
-  padding: 8px 10px;
-  background: #333;
+  padding: 10px;
+  background: #2c2c2c;
   color: var(--text);
-  border: 1px solid #555;
-  border-radius: 6px;
-  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+.controls-inline input[type="date"]:focus {
+  outline: none;
 }
 
 .controls-inline button {
   flex: 0 0 130px;
   margin: 0;
+  padding: 8px 16px;
   height: 40px;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: bold;
+  background: var(--button-bg);
+  color: #f5f5f5;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  font-size: 0.9em;
+  font-weight: 500;
+  line-height: 1;
   cursor: pointer;
-  transition: background .2s, transform .1s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
-.controls-inline button:hover { background: var(--accent-hover); }
-.controls-inline button:active { transform: scale(.97); }
+.controls-inline button:hover {
+  background: var(--button-hover);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+.controls-inline button:active { transform: scale(0.98); }
 
 /* ---------- Home Button ---------- */
-/* Home button */
-.back-to-index{
+.back-to-index {
   position: fixed;
   top: 20px;
   left: 20px;
+  z-index: 1000;
 }
-.back-button{
+
+.back-button {
   width: 50px;
   height: 50px;
   border: none;
   cursor: pointer;
-  transition: opacity 0.3s;
-  border-radius: 10px;
-  background: #2c2c2c;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(40, 40, 40, 0.7) 0%, rgba(30, 30, 30, 0.7) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  text-decoration: none;
 }
-.back-button:hover{ opacity: 0.8; }
+
+.back-button svg {
+  width: 24px;
+  height: 24px;
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background: linear-gradient(135deg, rgba(50, 50, 50, 0.8) 0%, rgba(40, 40, 40, 0.8) 100%);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.back-button:hover svg {
+  color: rgba(255, 255, 255, 0.95);
+}
 
 /* ---------- Week Range Label ---------- */
 .week-range {
@@ -155,13 +198,13 @@ form {
 .time-input {
   width: 100%;
   text-align: center;
-  background: #333;
+  background: #2c2c2c;
   color: var(--text);
-  border: 1px solid #555;
-  border-radius: 6px;
-  padding: 10px 12px;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
   height: 38px;
-  font-size: 1rem;
+  font-size: 1em;
   transition: border-color .15s, background .15s;
 }
 .time-input::placeholder { color: #777; }
@@ -170,7 +213,7 @@ form {
   border-color: #4c8dff;
   background: #2e2e2e;
 }
-.time-input.invalid { border-color: var(--bad); }
+.time-input.invalid { border: 1px solid var(--bad); }
 
 /* ---------- Disabled (Holiday / Vacation) ---------- */
 .disabled-holiday,
@@ -188,10 +231,12 @@ form {
 /* ---------- Results Section ---------- */
 #results {
   margin-top: 24px;
-  background: var(--card);
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,.3);
+  background: var(--card-bg);
+  padding: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(30px);
   max-width: 860px;
   width: 100%;
   text-align: left;
@@ -206,10 +251,11 @@ form {
 
 .result-box {
   flex: 1 1 280px;
-  background: #333;
+  background: linear-gradient(135deg, rgba(45, 45, 45, 0.7) 0%, rgba(35, 35, 35, 0.7) 100%);
   padding: 16px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,.3);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   text-align: center;
 }
 
