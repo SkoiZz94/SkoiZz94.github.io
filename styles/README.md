@@ -1,114 +1,146 @@
-# 🎨 CSS Styles Documentation
+# CSS Styles Documentation
 
-This folder contains multiple CSS stylesheets that share a **cohesive dark-themed design system** across different applications (Quiz, Kanban Board, and WIM Calculator).  
-
-The overall design emphasizes:
-- **Dark backgrounds** (`#1e1e1e`, `#2b2b2b`, `#2c2c2c`) for a modern look and reduced eye strain.  
-- **Light text** (`#e0e0e0`) for high contrast readability.  
-- **Accent colors** (primarily shades of **red**, plus **green** for success and **yellow** for warnings).  
-- **Rounded corners** and **soft shadows** to create depth.  
-- **Consistent typography** using `Arial, sans-serif`.  
-- **Responsive layouts** with `flexbox` and `CSS grid`.  
+This folder contains CSS stylesheets that implement a **modern glassmorphism dark theme** across all applications.
 
 ---
 
-## 1. Quiz Styles (`cybeark-styles.css`)
+## Design System
 
-### Purpose
-Defines the look and feel of the interactive quiz application.
+The overall design uses an **Inspired glassmorphism** aesthetic:
 
-### Key Elements
-- **Layout**: `.quiz-wrapper` and `.quiz-container` center the quiz with rounded panels and shadows.  
-- **Questions/Answers**:  
-  - `.question` styled bold with larger font.  
-  - `.answers label` styled as clickable blocks with hover transitions.  
-- **Navigation**:  
-  - `.navigation` grid for buttons.  
-  - `.question-nav-btn` pill-style navigation with states: `.flagged`, `.answered`, `.current`.  
-- **Results & Review**:  
-  - `.pass` (green) and `.fail` (red) outcome styles.  
-  - `.review-item` panels with clear distinctions between correct, incorrect, and flagged answers.
-
----
-
-## 2. Index / Menu Styles (`index-styles.css`)
-
-### Purpose
-Provides a landing/index page style with logo, title, and button grid navigation.
-
-### Key Elements
-- **Centered Layout**: `.index` flexbox centers logo and buttons vertically and horizontally.  
-- **Logo & Title**: `.logo-title-container` for branding, image scaling, and heading.  
-- **Buttons**:  
-  - Uniform red buttons with hover (`#690000`) and active (scale-down) states.  
-  - `.button-container` grid ensures alignment of 3-column button layout.  
-- **Home Button**: `.back-to-index` and `.back-button` fixed in top-left corner for navigation.
+- **Dark backgrounds**: Gradient backgrounds (`#0d0d0d` to `#1a1a1a`)
+- **Glassmorphism panels**: Translucent backgrounds with `backdrop-filter: blur()`
+- **Light text**: High contrast (`#f5f5f5`) for readability
+- **Accent colors**:
+  - Green (`#4caf50`) for success/low priority
+  - Orange (`#ff9800`) for warnings/medium priority
+  - Red (`#f44336`) for errors/high priority
+  - Cyan (`#26c6da`) for priority changes in history
+  - Purple (`#ab47bc`) for status changes
+  - Blue (`#64b5f6`) for created/info
+- **Rounded corners**: 10-16px border-radius throughout
+- **Soft shadows**: Multiple layered shadows for depth
+- **Smooth transitions**: Cubic-bezier easing for animations
+- **System fonts**: Apple SF Pro fallback chain
 
 ---
 
-## 3. Kanban Board Styles (`kanban-styles.css`)
+## Stylesheet Files
 
-### Purpose
-Styles for the **Kanban task board** with multiple columns, draggable notes, and world clocks.
+### 1. `index-styles.css`
 
-### Key Elements
-- **Board Layout**:  
-  - `.kanban-board` grid with 4 columns on desktop, collapsing to 2 (tablet) or 1 (mobile).  
-  - `.column` styled with rounded corners, shadow, and scrollable content.  
-- **Notes**:  
-  - `.note` cards with dark background, padding, and drag-friendly styles.  
-  - `.note-content`, `.note-text`, `.timestamp` for structured task info.  
-- **Controls**:  
-  - `.edit-delete` container with icon-style buttons for actions.  
-  - `.export-btn` blue variant for exports.  
-- **Clocks**:  
-  - `.clock-container` responsive flex layout.  
-  - `.clock-time`, `.clock-date`, `.clock-name` with distinct sizing and coloring.  
-- **Responsive Design**:  
-  - Media queries for tablets (`max-width: 1024px`), phones (`max-width: 640px`), and wide screens (`min-width: 1200px`).  
+**Purpose**: Home page styling with logo and navigation grid
+
+**Key Elements**:
+- `.index` - Centered flexbox layout
+- `.logo-title-container img` - Logo with `drop-shadow` glow effect
+- `.button-container` - 3-column grid for navigation buttons
+- `.back-button` - Glassmorphism navigation button with SVG icon support
 
 ---
 
-## 4. Secondary Index Styles (`trainings-styles.css`)
+### 2. `kanban-styles.css`
 
-### Purpose
-An alternative index page stylesheet with small variations in logo size, button layout, and text colors.
+**Purpose**: Full Kanban board styling with tasks, modals, clocks, and priorities
 
-### Key Elements
-- Similar to **Index Styles**, but with:  
-  - `.logo-title-container img` smaller width (`200px`).  
-  - `.logo-title-container h1` larger (`2em`) and explicitly white.  
-- Ensures flexibility for different landing page designs.
+**Key Elements**:
+- **Board Layout**:
+  - `.kanban-board` - 4-column grid (responsive: 2 on tablet, 1 on mobile)
+  - `.column` - Glassmorphism panels with unique tints per column
+- **Task Cards**:
+  - `.note` - Draggable cards with priority color coding
+  - `.priority-low/medium/high` - Left border + background tint
+  - `.priority-display` - Priority label on cards
+  - `.worked-time` - Timer display
+  - `.timestamp` - Creation date
+- **Modals**:
+  - `.modal` - Full-screen overlay with blur
+  - `.modal-content` - Glassmorphism panel
+  - `.notes-editor` - Plain text editor area
+  - `.priority-controls` - Priority button group
+  - `.timer-controls` - Time add/subtract buttons
+  - `.history-list` - Action history with color-coded types
+- **Image Viewer**:
+  - `.image-modal` - Full-screen image display
+  - `.image-controls` - Zoom buttons
+  - `.image-container` - Centered image with pan support
+- **Clocks**:
+  - `.clock` - Timezone clock cards
+  - `.chronometer-controls` - Start/pause/reset buttons
+  - `.clock-add-button` - Add new clock button
+- **Quick Menus**:
+  - `.quick-time-menu` - Floating time adjustment menu
+  - `.quick-priority-menu` - Floating priority selector
 
 ---
 
-## 5. Workday & Holiday Calculator Styles (`wincalc-styles.css`)
+### 3. `trainings-styles.css`
 
-### Purpose
-Styles for the Portuguese workday/holiday calculator form and results display.
+**Purpose**: Training hub and sub-page styling
 
-### Key Elements
-- **Form Container**:  
-  - `form` styled with dark background, padding, rounded corners, and shadows.  
-  - Inputs (`select`, `input[type=number]`) styled consistently with dark backgrounds and light text.  
-- **Button**:  
-  - Red button (`#fb0000`) with hover (`#690000`) and active (scale-down) states.  
-- **Results Panel**:  
-  - `#results` styled as a card with dynamic width, padding, shadows, and inline-block for responsive resizing.  
-  - `.score` styled inline with dynamic color based on JS logic.  
-- **Typography**:  
-  - `.bold` for emphasis.  
-  - `#results h2, #results h3` green highlight (`#4caf50`).  
-- **Logo/Navigation**:  
-  - `.logo-title-container` and `.back-to-index` similar to other apps for consistency.
+**Key Elements**:
+- `.index` - Centered layout for training pages
+- `.button-container` - Grid for training module links
+- `.back-to-index` - Home button positioning
+- `.nav-buttons` - Dual button container (Home + Back)
+- `.back-button` - Glassmorphism button with SVG support
 
 ---
 
-## ✅ Consistency Across Files
-- **Dark mode theme** applied everywhere.  
-- **Red accents** for actions, warnings, or branding.  
-- **Green for positive outcomes** (pass, success, valid score).  
-- **Responsive, mobile-friendly layouts**.  
-- **Back-to-index button** consistently positioned for navigation.  
+### 4. `cyberark-styles.css`
 
-This unified design ensures all applications feel like part of the same suite.  
+**Purpose**: Quiz application styling
+
+**Key Elements**:
+- `.quiz-wrapper` / `.quiz-container` - Centered quiz panel
+- `.question` - Question text styling
+- `.answers label` - Clickable answer options with hover states
+- `.question-nav-btn` - Navigation pills with states (`.flagged`, `.answered`, `.current`)
+- `.pass` / `.fail` - Result outcome colors
+- `.review-item` - Review mode question panels
+- `.nav-buttons` - Dual navigation buttons
+
+---
+
+### 5. `wincalc-styles.css`
+
+**Purpose**: WIM Calculator form and results styling
+
+**Key Elements**:
+- `form` - Input form with dark glassmorphism
+- `.controls-row` / `.controls-inline` - Form layout
+- `#results` - Results panel with dynamic width
+- `.vacation-day` - Blue highlight for vacation
+- `.feriado` - Orange highlight for holidays
+- Compliance colors: red/yellow/green indicators
+
+---
+
+## Navigation Buttons
+
+All pages use a consistent glassmorphism navigation button:
+
+```css
+.back-button {
+  background: linear-gradient(135deg, rgba(40,40,40,0.7), rgba(30,30,30,0.7));
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.12);
+  /* SVG icon inside, styled via currentColor */
+}
+```
+
+Training sub-pages use `.nav-buttons` for dual buttons (Home + Back to Trainings).
+
+---
+
+## Responsive Design
+
+- **Desktop** (>1200px): Full 4-column Kanban, all features visible
+- **Tablet** (≤1024px): 2-column Kanban, stacked notes areas
+- **Mobile** (≤640px): Single column, touch-optimized controls
+
+---
+
+## Motion Preferences
+
+Respects `prefers-reduced-motion` media query to disable animations for accessibility.

@@ -6,39 +6,34 @@
     <title>Kanban Board</title>
     <!-- Link to External CSS -->
     <link rel="stylesheet" href="../styles/kanban-styles.css">
+    <!-- jsPDF Library for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 	<!-- Back to Index Button -->
 	<div class="back-to-index">
-		<a href="../index.html">
-			<img src="../images/homebutton.png" alt="Back to Index" class="back-button">
+		<a href="../index.html" class="back-button">
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+				<polyline points="9 22 9 12 15 12 15 22"></polyline>
+			</svg>
 		</a>
 	</div>
-    <div class="clock-container">
-        <div class="clock clock-current">
-            <div class="clock-name">Current Time</div>
-            <div id="clockCurrent" class="clock-time"></div>
-            <div id="currentDate" class="clock-date"></div>
+    <div class="clock-wrapper">
+        <div class="clock-container" id="clockContainer">
+            <!-- Clocks will be dynamically generated here -->
         </div>
-        <div class="clock">
-            <div class="clock-name">Europe</div>
-            <div id="clockEurope" class="clock-time"></div>
-            <div id="europeDate" class="clock-date"></div>
+        <div class="clock-add-button" onclick="openAddClockModal()">
+            <div class="clock-add-content">
+                <span class="clock-add-icon">+</span>
+            </div>
         </div>
-        <div class="clock">
-            <div class="clock-name">China</div>
-            <div id="clockChina" class="clock-time"></div>
-            <div id="chinaDate" class="clock-date"></div>
-        </div>
-        <div class="clock">
-            <div class="clock-name">Americas</div>
-            <div id="clockAmericas" class="clock-time"></div>
-            <div id="americasDate" class="clock-date"></div>
-        </div>
-        <div class="clock">
-            <div class="clock-name">Africa</div>
-            <div id="clockAfrica" class="clock-time"></div>
-            <div id="africaDate" class="clock-date"></div>
+    </div>
+
+    <div class="controls-top">
+        <div class="controls-row-main">
+            <input type="text" id="newNote" placeholder="Enter title for a new task">
+            <button onclick="addNote()">Add</button>
         </div>
     </div>
 
@@ -49,25 +44,147 @@
         <div class="column" id="inProgress">
             <h2>In Progress</h2>
         </div>
-        <div class="column" id="done">
-            <h2>Done</h2>
-        </div>
         <div class="column" id="onHold">
             <h2>On Hold</h2>
         </div>
+        <div class="column" id="done">
+            <h2>Done</h2>
+        </div>
     </div>
 
-    <div class="controls">
-        <input type="text" id="newNote" placeholder="Enter title for a new task">
-        <button onclick="addNote()">Add</button>
-        <button class="export-btn" onclick="exportNotes()">Export Data</button>
+    <div class="notes-container">
+        <textarea id="permanentNotes" class="notes-field" placeholder="Write permanent notes here..."></textarea>
+        <textarea id="temporaryNotes" class="notes-field" placeholder="Write temporary notes here..."></textarea>
     </div>
 
-    <textarea class="temporary-notes" placeholder="Write temporary notes here..."></textarea>
+    <div class="controls-bottom">
+        <div class="controls-row-secondary">
+            <button class="export-btn" onclick="exportBoardAsHTML()">Export Board (HTML)</button>
+            <button class="import-btn" onclick="document.getElementById('importFile').click()">Import Board</button>
+            <input type="file" id="importFile" accept=".html,.txt" style="display: none;" onchange="importBoardFromFile(event)">
+        </div>
+    </div>
+
+    <!-- Task Details Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeTaskModal()">&times;</span>
+            <h2 id="modalTitle">Task Details</h2>
+
+            <div class="modal-actions-top">
+                <button onclick="saveAndCloseModal()">Save & Close</button>
+                <button class="export-btn" onclick="exportTaskAsPDF()">Export PDF</button>
+                <button class="delete-btn" onclick="deleteTaskFromModal()">Delete</button>
+            </div>
+
+            <div class="modal-section">
+                <div class="notes-header">
+                    <h4>Notes</h4>
+                    <button id="clearNotesBtn" class="clear-btn" onclick="clearNotes()" style="display: none;">Clear All</button>
+                </div>
+                <div id="modalNotesEditor" class="notes-editor" contenteditable="true" data-placeholder="Write your notes here..."></div>
+            </div>
+
+            <div class="modal-section priority-section">
+                <h4>Priority: <span id="modalPriorityLabel">None</span></h4>
+                <div class="priority-controls">
+                    <button class="priority-btn" data-priority="none" onclick="setModalPriority(null)">None</button>
+                    <button class="priority-btn" data-priority="low" onclick="setModalPriority('low')">Low</button>
+                    <button class="priority-btn" data-priority="medium" onclick="setModalPriority('medium')">Medium</button>
+                    <button class="priority-btn" data-priority="high" onclick="setModalPriority('high')">High</button>
+                </div>
+            </div>
+
+            <div class="modal-section timer-section">
+                <h4>Worked Time: <span id="modalTimerTotal">0m</span></h4>
+                <div class="timer-controls-wrapper">
+                    <div class="timer-controls">
+                        <button onclick="addTime(1)">+1m</button>
+                        <button onclick="addTime(5)">+5m</button>
+                        <button onclick="addTime(10)">+10m</button>
+                        <button onclick="addTime(15)">+15m</button>
+                        <button onclick="addTime(30)">+30m</button>
+                        <button onclick="addTime(60)">+60m</button>
+                    </div>
+                    <div class="timer-controls subtract">
+                        <button onclick="addTime(-1)">-1m</button>
+                        <button onclick="addTime(-5)">-5m</button>
+                        <button onclick="addTime(-10)">-10m</button>
+                        <button onclick="addTime(-15)">-15m</button>
+                        <button onclick="addTime(-30)">-30m</button>
+                        <button onclick="addTime(-60)">-60m</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-section">
+                <h4 class="history-header" onclick="toggleHistory()">
+                    <span>History</span>
+                    <span id="historyToggle" class="history-toggle">▼</span>
+                </h4>
+                <div id="modalHistory" class="history-list" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Viewer Modal -->
+    <div id="imageModal" class="modal image-modal">
+        <div class="image-modal-content">
+            <span class="modal-close" onclick="closeImageModal()">&times;</span>
+            <div class="image-controls">
+                <button onclick="zoomImage(-0.1)">-</button>
+                <button onclick="resetZoom()">Reset</button>
+                <button onclick="zoomImage(0.1)">+</button>
+            </div>
+            <div class="image-container">
+                <img id="modalImage" src="" alt="Screenshot">
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Clock Modal -->
+    <div id="addClockModal" class="modal">
+        <div class="modal-content clock-modal-content">
+            <span class="modal-close" onclick="closeAddClockModal()">&times;</span>
+            <h2>Add Clock</h2>
+
+            <div class="clock-type-selection">
+                <button class="clock-type-btn" onclick="selectClockType('timezone')">
+                    <span class="clock-type-icon">🌍</span>
+                    <span class="clock-type-label">Timezone Clock</span>
+                </button>
+                <button class="clock-type-btn" onclick="selectClockType('chronometer')">
+                    <span class="clock-type-icon">⏱️</span>
+                    <span class="clock-type-label">Chronometer</span>
+                </button>
+            </div>
+
+            <div id="timezoneClockForm" class="clock-form" style="display: none;">
+                <h3>Add Timezone Clock</h3>
+                <label for="clockName">Clock Name:</label>
+                <input type="text" id="clockName" placeholder="e.g., New York">
+
+                <label for="clockTimezoneSearch">Timezone (search):</label>
+                <input type="text" id="clockTimezoneSearch" placeholder="Type to search timezones..." autocomplete="off" oninput="filterTimezones()">
+                <div id="timezoneList" class="timezone-list"></div>
+                <input type="hidden" id="clockTimezoneSelected">
+
+                <button class="modal-action-btn" onclick="addTimezoneClock()">Add Clock</button>
+            </div>
+
+            <div id="chronometerForm" class="clock-form" style="display: none;">
+                <h3>Add Chronometer</h3>
+                <label for="chronometerName">Chronometer Name:</label>
+                <input type="text" id="chronometerName" placeholder="e.g., Work Timer">
+
+                <button class="modal-action-btn" onclick="addChronometer()">Add Chronometer</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Link to External JS -->
     <script src="../scripts/kanban.js"></script>
-	
-	
+
+
 </body>
 </html>

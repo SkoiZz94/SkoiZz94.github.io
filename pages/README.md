@@ -1,117 +1,148 @@
-# 🌐 HTML Pages Documentation
+# HTML Pages Documentation
 
-This folder contains multiple HTML files that implement different parts of a **training and utilities portal**.  
-All pages share a **consistent dark-themed design** with:
-- A **back-to-index button** for navigation.  
-- **Centered layouts** for main content.  
-- Integration with dedicated CSS stylesheets and JavaScript logic.  
-- Responsive structures for usability across devices.  
+This folder contains the HTML pages that implement different sections of the **productivity and learning portal**.
+
+All pages share:
+- **Glassmorphism dark theme** via dedicated CSS stylesheets
+- **SVG navigation buttons** (home icon, back arrow)
+- **Centered layouts** for main content
+- **Responsive design** for all screen sizes
 
 ---
 
-## 1. CyberArk Training Quiz (`cyberarktraining.html`)
+## 1. Kanban Board (`kanban.html`)
 
 ### Purpose
-Provides an interactive quiz for CyberArk training, pulling questions dynamically from JSON and styled with `cyberark-styles.css`.
+A full-featured task management board with drag-and-drop, priorities, timers, and clocks.
 
 ### Structure
-- **Back to Index button** (links to `trainingsindex.html`).  
-- **Quiz Container**:  
-  - Loader and error messages.  
-  - Quiz interface with questions, answers, navigation (Prev/Next/Flag).  
-  - Submit button always visible.  
-- **Results Panel**: Score, counts, retry and review options.  
-- **Review Section**: Displays flagged or answered questions.  
-- Linked to `cyberark.js` for logic.
+- **Navigation**: Home button (top-left)
+- **Clock Container**: Timezone clocks and chronometers
+- **Controls**: Task input field and Add button
+- **Kanban Board**: Four columns (To Do, In Progress, On Hold, Done)
+- **Notes Area**: Permanent and temporary text areas
+- **Export/Import**: HTML export and file import buttons
+- **Task Modal**: Detailed task view with notes, priority, timer, history
+- **Image Modal**: Full-screen image viewer with zoom
+- **Clock Modal**: Add timezone clocks or chronometers
+
+**Linked Assets**:
+- `kanban-styles.css`
+- `kanban.js`
+- jsPDF (CDN)
 
 ---
 
-## 2. Kanban Board (`kanban.html`)
+## 2. WIM Calculator (`wincalc.html`)
 
 ### Purpose
-Implements a Kanban board for task management, with draggable notes and world clocks.
+Portuguese workday/holiday calculator for office attendance compliance.
 
 ### Structure
-- **Back to Index button**.  
-- **Clock Container**: Shows current/local time plus Europe, China, Americas, and Africa.  
-- **Kanban Board**: Four columns (`To Do`, `In Progress`, `Done`, `On Hold`).  
-- **Controls**: Input to add tasks, buttons to add/export, and a temporary notes textarea.  
-- Linked to `kanban-styles.css` and `kanban.js`.
+- **Navigation**: Home button
+- **Header**: Title and current date
+- **Form**: Week selector, daily time inputs, vacation checkboxes
+- **Results**: Calculated metrics and compliance indicators
+
+**Linked Assets**:
+- `wincalc-styles.css`
+- `wincalc.js`
 
 ---
 
-## 3. Linux Training Page (`linuxtraining.html`)
+## 3. Trainings Index (`trainingsindex.html`)
 
 ### Purpose
-Landing page with curated links to Linux training videos.
+Navigation hub for all training modules.
 
 ### Structure
-- **Back to Index button**.  
-- **Logo & Title**: Training warning and instructions.  
-- **Button Container**: Grid of external links (PacktPub courses).  
-- Linked to `trainings-styles.css`.
+- **Navigation**: Home button
+- **Button Container**: Links to Linux, Python, CyberArk training
+
+**Linked Assets**:
+- `trainings-styles.css`
 
 ---
 
-## 4. Python Training Page (`pythontraining.html`)
+## 4. Linux Training (`linuxtraining.html`)
 
 ### Purpose
-Landing page with curated links to Python training resources.
+Curated links to Linux training resources.
 
 ### Structure
-- **Back to Index button**.  
-- **Logo & Title**: Training warning and instructions.  
-- **Button Container**: Large collection of external links (Mammoth Interactive courses).  
-- Linked to `trainings-styles.css`.
+- **Navigation**: Home button + Back to Trainings button
+- **Warning**: Access instructions
+- **Button Container**: External course links (PacktPub)
+
+**Linked Assets**:
+- `trainings-styles.css`
 
 ---
 
-## 5. Trainings Index (`trainingsindex.html`)
+## 5. Python Training (`pythontraining.html`)
 
 ### Purpose
-Navigation hub for training sections.
+Curated links to Python training resources.
 
 ### Structure
-- **Back to Index button**.  
-- **Button Container** linking to:  
-  - Linux Training,  
-  - Python Training,  
-  - CyberArk Quiz.  
-- Provides an entry point for future training additions.  
-- Linked to `trainings-styles.css`.
+- **Navigation**: Home button + Back to Trainings button
+- **Warning**: Access instructions
+- **Button Container**: External course links (Mammoth Interactive)
+
+**Linked Assets**:
+- `trainings-styles.css`
 
 ---
 
-## 6. Useful Stuff Page (`usefulstuff.html`)
+## 6. CyberArk Training Quiz (`cyberarktraining.html`)
 
 ### Purpose
-Quick access to curated external resources (GitHub repos, DevOps exercises, tools).
+Interactive quiz for CyberArk certification preparation.
 
 ### Structure
-- **Back to Index button**.  
-- **Button Container** with external links (GitHub websites lists, DevOps Bible, Python syntax checker).  
-- Linked to `trainings-styles.css`.
+- **Navigation**: Home button + Back to Trainings button
+- **Quiz Logo**: `images/quiz.png`
+- **Quiz Container**: Question display, answer options, navigation
+- **Results Panel**: Score, pass/fail, retry/review options
+- **Review Section**: Detailed answer review
+
+**Linked Assets**:
+- `cyberark-styles.css`
+- `cyberark.js`
+- `data/questions.json`
 
 ---
 
-## 7. WIM Calculator (`wincalc.html`)
+## 7. Useful Stuff (`usefulstuff.html`)
 
 ### Purpose
-Implements a calculator for Portuguese workdays, holidays, and attendance score.
+Quick access to curated external resources.
 
 ### Structure
-- **Back to Index button**.  
-- **Logo & Title**.  
-- **Form**: Month selector, vacation days, workdays attended.  
-- **Results Container**: Populated dynamically.  
-- Linked to `wincalc-styles.css` and `wincalc.js`.
+- **Navigation**: Home button
+- **Button Container**: External links (GitHub repos, DevOps tools, syntax checkers)
+
+**Linked Assets**:
+- `trainings-styles.css`
 
 ---
 
-## ✅ Consistency Across Pages
-- **Navigation**: Every page has a back-to-index button with a house icon.  
-- **Dark theme**: Achieved through linked CSS.  
-- **Grid-based button containers** for navigation and training links.  
-- **Integration with scripts** for interactivity (quiz, kanban, calculator).  
+## Navigation Patterns
 
-This ensures a unified user experience across all HTML pages.
+### Single Button (Most Pages)
+- Home button with house SVG icon
+- Links to `index.html`
+
+### Dual Buttons (Training Sub-Pages)
+- Home button → `index.html`
+- Back button (arrow) → `trainingsindex.html`
+- Uses `.nav-buttons` container for side-by-side layout
+
+---
+
+## Consistency Notes
+
+- All pages use glassmorphism styling from their respective CSS files
+- Navigation buttons are SVG-based (no image files)
+- External links open in new tabs with `target="_blank"`
+- Forms and interactive elements have consistent dark theme styling
