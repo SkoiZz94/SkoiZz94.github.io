@@ -1570,11 +1570,15 @@ function updateNoteColumn(id, oldColumn, newColumn) {
     saveNotesToLocalStorage();
 
     if (newColumn === 'done') {
-      setTimeout(() => {
-        if (confirm(`Task "${note.title}" moved to Done.\n\nDo you want to export it as PDF?`)) {
-          exportTaskAsPDF(id);
-        }
-      }, 300);
+      // Use requestAnimationFrame to ensure we're outside the drag event context
+      // This helps Chrome's popup blocker allow the confirm dialog
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          if (confirm(`Task "${note.title}" moved to Done.\n\nDo you want to export it as PDF?`)) {
+            exportTaskAsPDF(id);
+          }
+        }, 100);
+      });
     }
   }
 }
