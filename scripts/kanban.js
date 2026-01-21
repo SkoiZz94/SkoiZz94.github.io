@@ -639,6 +639,7 @@ function loadNotesFromLocalStorage() {
 
     // Migrate old format to new format
     notesData = notesData.map(note => {
+      // Ensure all required properties exist
       if (!note.noteEntries) {
         note.noteEntries = [];
         // Migrate old notesHTML if it exists
@@ -652,6 +653,28 @@ function loadNotesFromLocalStorage() {
           delete note.images;
         }
       }
+      
+      // Ensure all properties exist with proper defaults
+      if (!note.actions) {
+        note.actions = [{
+          action: 'Created',
+          timestamp: new Date().toLocaleString(),
+          type: 'created'
+        }];
+      }
+      
+      if (note.timer === undefined) {
+        note.timer = 0;
+      }
+      
+      if (note.priority === undefined) {
+        note.priority = null;
+      }
+      
+      if (!note.column) {
+        note.column = 'todo';
+      }
+      
       return note;
     });
 
@@ -1559,9 +1582,16 @@ async function deleteNote(id, addToHistory = true) {
 
 function updateNoteColumn(id, oldColumn, newColumn) {
   const note = notesData.find(n => n.id === id);
+  
   if (note && oldColumn !== newColumn) {
     note.column = newColumn;
     const timestamp = new Date().toLocaleString();
+    
+    // Ensure actions array exists (for imported or legacy data)
+    if (!note.actions) {
+      note.actions = [];
+    }
+    
     note.actions.push({
       action: `Moved from ${getColumnName(oldColumn)} to ${getColumnName(newColumn)}`,
       timestamp,
@@ -1570,11 +1600,15 @@ function updateNoteColumn(id, oldColumn, newColumn) {
     saveNotesToLocalStorage();
 
     if (newColumn === 'done') {
-      setTimeout(() => {
-        if (confirm(`Task "${note.title}" moved to Done.\n\nDo you want to export it as PDF?`)) {
-          exportTaskAsPDF(id);
-        }
-      }, 300);
+      // Use requestAnimationFrame to ensure we're outside the drag event context
+      // This helps Chrome's popup blocker allow the confirm dialog
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          if (confirm(`Task "${note.title}" moved to Done.\n\nDo you want to export it as PDF?`)) {
+            exportTaskAsPDF(id);
+          }
+        }, 100);
+      });
     }
   }
 }
@@ -1781,22 +1815,26 @@ function createNoteElement(content) {
  ***********************/
 let draggedItem = null;
 
-document.querySelectorAll('.column').forEach(column => {
-  column.addEventListener('dragover', e => e.preventDefault());
-  column.addEventListener('drop', function () {
-    if (draggedItem) {
-      const oldColumnId = draggedItem.parentElement.id;
-      const newColumnId = this.id;
-      const noteId = parseInt(draggedItem.dataset.id, 10);
+function setupDragAndDrop() {
+  const columns = document.querySelectorAll('.column');
+  
+  columns.forEach(column => {
+    column.addEventListener('dragover', e => e.preventDefault());
+    column.addEventListener('drop', function () {
+      if (draggedItem) {
+        const oldColumnId = draggedItem.parentElement.id;
+        const newColumnId = this.id;
+        const noteId = parseFloat(draggedItem.dataset.id); // Use parseFloat to preserve decimal IDs
 
-      this.appendChild(draggedItem);
-      updateNoteColumn(noteId, oldColumnId, newColumnId);
+        this.appendChild(draggedItem);
+        updateNoteColumn(noteId, oldColumnId, newColumnId);
 
-      draggedItem = null;
-      saveNotesToLocalStorage();
-    }
+        draggedItem = null;
+        saveNotesToLocalStorage();
+      }
+    });
   });
-});
+}
 
 function enableTouchDrag(noteEl) {
   let touchStartX = 0;
@@ -2299,12 +2337,13 @@ async function importBoardFromTXT(file) {
           continue;
         }
 
-        // Create the task object
+        // Create the task object with exact same structure as new notes
         const newTask = {
           id: Date.now() + Math.random(),
           title: title,
           noteEntries: [],
           timer: 0,
+          priority: null,
           column: column,
           actions: actions.length > 0 ? actions : [{
             action: 'Created (imported from TXT)',
@@ -2410,6 +2449,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initIndexedDB();
   loadClocks();
   loadNotesFromLocalStorage();
+  setupDragAndDrop(); // Set up drag and drop handlers after DOM is ready
   setupClipboardPaste();
   loadPermanentNotes();
 
