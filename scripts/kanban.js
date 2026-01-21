@@ -1673,6 +1673,12 @@ function createNoteElement(content) {
     e.stopPropagation();
     showQuickPriorityMenu(content.id, priorityButton);
   };
+  // iOS touch support
+  priorityButton.addEventListener('touchend', function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    showQuickPriorityMenu(content.id, priorityButton);
+  });
 
   const timerButton = document.createElement('button');
   timerButton.textContent = "⏱️";
@@ -1745,7 +1751,7 @@ function createNoteElement(content) {
   deleteButton.textContent = "❌";
   deleteButton.style.color = "#e57373";
   deleteButton.title = "Delete";
-  deleteButton.onclick = async function (e) {
+  const handleDelete = async function (e) {
     e.stopPropagation();
     if (confirm("Are you sure you want to delete this task?")) {
       const task = notesData.find(t => t.id === content.id);
@@ -1767,6 +1773,12 @@ function createNoteElement(content) {
       await deleteNote(content.id, !shouldExport); // Only add to history if not exported
     }
   };
+  deleteButton.onclick = handleDelete;
+  // iOS touch support
+  deleteButton.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    handleDelete(e);
+  });
 
   [priorityButton, timerButton, deleteButton].forEach(btn => {
     btn.draggable = false;
@@ -1825,44 +1837,75 @@ function setupDragAndDrop() {
 }
 
 function enableTouchDrag(noteEl) {
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let isDragging = false;
+  const dragThreshold = 10; // pixels of movement before considered a drag
+
   noteEl.addEventListener('touchstart', (e) => {
     if (e.target.closest('button')) return;
+
+    const t = e.touches[0];
+    touchStartX = t.clientX;
+    touchStartY = t.clientY;
+    isDragging = false;
     draggedItem = noteEl;
-    e.preventDefault();
-  }, { passive: false });
+    // Don't preventDefault here - allow click/tap to work
+  }, { passive: true });
 
   noteEl.addEventListener('touchmove', (e) => {
     if (!draggedItem) return;
-    e.preventDefault();
-    const t = e.touches[0];
-    const elUnderFinger = document.elementFromPoint(t.clientX, t.clientY);
-    const hoveredCol = elUnderFinger && elUnderFinger.closest('.column');
 
-    document.querySelectorAll('.column').forEach(c =>
-      c.classList.toggle('drop-hover', c === hoveredCol)
-    );
+    const t = e.touches[0];
+    const deltaX = Math.abs(t.clientX - touchStartX);
+    const deltaY = Math.abs(t.clientY - touchStartY);
+
+    // Only start dragging if moved beyond threshold
+    if (!isDragging && (deltaX > dragThreshold || deltaY > dragThreshold)) {
+      isDragging = true;
+    }
+
+    if (isDragging) {
+      e.preventDefault();
+      const elUnderFinger = document.elementFromPoint(t.clientX, t.clientY);
+      const hoveredCol = elUnderFinger && elUnderFinger.closest('.column');
+
+      document.querySelectorAll('.column').forEach(c =>
+        c.classList.toggle('drop-hover', c === hoveredCol)
+      );
+    }
   }, { passive: false });
 
   noteEl.addEventListener('touchend', (e) => {
     if (!draggedItem) return;
 
-    const t = e.changedTouches[0];
-    const elUnderFinger = document.elementFromPoint(t.clientX, t.clientY);
-    const dropCol = elUnderFinger && elUnderFinger.closest('.column');
-
     document.querySelectorAll('.column').forEach(c => c.classList.remove('drop-hover'));
 
-    if (dropCol) {
-      const oldColumnId = draggedItem.parentElement.id;
-      const newColumnId = dropCol.id;
-      const noteId = parseFloat(draggedItem.dataset.id); // Use parseFloat to preserve decimal IDs
+    if (isDragging) {
+      // It was a drag - handle the drop
+      const t = e.changedTouches[0];
+      const elUnderFinger = document.elementFromPoint(t.clientX, t.clientY);
+      const dropCol = elUnderFinger && elUnderFinger.closest('.column');
 
-      dropCol.appendChild(draggedItem);
-      updateNoteColumn(noteId, oldColumnId, newColumnId);
-      saveNotesToLocalStorage();
+      if (dropCol) {
+        const oldColumnId = draggedItem.parentElement.id;
+        const newColumnId = dropCol.id;
+        const noteId = parseInt(draggedItem.dataset.id, 10);
+
+        dropCol.appendChild(draggedItem);
+        updateNoteColumn(noteId, oldColumnId, newColumnId);
+        saveNotesToLocalStorage();
+      }
+    } else {
+      // It was a tap - open the modal
+      const noteId = parseInt(noteEl.dataset.id, 10);
+      if (!e.target.closest('button') && !e.target.closest('.quick-time-menu')) {
+        openTaskModal(noteId);
+      }
     }
 
     draggedItem = null;
+    isDragging = false;
   });
 }
 
@@ -2422,6 +2465,74 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (permanentNotesField) {
     permanentNotesField.addEventListener('input', savePermanentNotes);
   }
+
+  // iOS Safari touch support for elements with onclick attributes
+  // This ensures taps work reliably on touch devices
+  const clockAddButton = document.querySelector('.clock-add-button');
+  if (clockAddButton) {
+    clockAddButton.addEventListener('touchend', (e) => {
+      if (!e.target.closest('button')) {
+        e.preventDefault();
+        openAddClockModal();
+      }
+    });
+  }
+
+  // iOS touch support for modal close buttons
+  document.querySelectorAll('.modal-close').forEach(closeBtn => {
+    closeBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      const modal = closeBtn.closest('.modal');
+      if (modal) {
+        if (modal.id === 'taskModal') closeTaskModal();
+        else if (modal.id === 'imageModal') closeImageModal();
+        else if (modal.id === 'addClockModal') closeAddClockModal();
+      }
+    });
+  });
+
+  // iOS touch support for modal backdrop tap-to-close
+  document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('touchend', (e) => {
+      if (e.target === modal) {
+        e.preventDefault();
+        if (modal.id === 'taskModal') {
+          // Use existing close logic with unsaved changes check
+          const task = notesData.find(t => t.id === currentTaskId);
+          const notesEditor = document.getElementById('modalNotesEditor');
+          const hasTextContent = notesEditor && notesEditor.textContent.trim().length > 0;
+          const hasImages = notesEditor && notesEditor.querySelectorAll('img').length > 0;
+          const hasNoteChanges = notesEditor && notesEditor.innerHTML.trim() && (hasTextContent || hasImages);
+          const hasTimerChanges = task && (task.timer || 0) !== originalTimerValue;
+          const hasPriorityChanges = currentModalPriority !== originalPriorityValue;
+          const hasRealChanges = hasNoteChanges || hasTimerChanges || hasPriorityChanges;
+
+          if (modalHasChanges && hasRealChanges) {
+            if (confirm('You have unsaved changes. Are you sure you want to close without saving?')) {
+              if (task && hasTimerChanges) {
+                task.timer = originalTimerValue;
+                updateNoteCardDisplay(currentTaskId);
+                saveNotesToLocalStorage();
+              }
+              modalHasChanges = false;
+              modalPendingActions = [];
+              originalTimerValue = 0;
+              originalPriorityValue = null;
+              currentModalPriority = null;
+              modal.style.display = 'none';
+              currentTaskId = null;
+            }
+          } else {
+            closeTaskModal();
+          }
+        } else if (modal.id === 'imageModal') {
+          closeImageModal();
+        } else if (modal.id === 'addClockModal') {
+          closeAddClockModal();
+        }
+      }
+    });
+  });
 
   window.onclick = function(event) {
     const taskModal = document.getElementById('taskModal');
