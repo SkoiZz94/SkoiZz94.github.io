@@ -1,9 +1,9 @@
 # JavaScript Documentation
 
-This folder contains three JavaScript files powering the interactive features of the project:
+This folder contains JavaScript files powering the interactive features of the project:
 
 1. **CyberArk Quiz Application** (`cyberark.js`)
-2. **Kanban Board** (`kanban.js`)
+2. **TaskHub** (`taskhub.js` + `modules/`)
 3. **WIM Calculator** (`wincalc.js`)
 
 ---
@@ -34,15 +34,41 @@ An interactive quiz engine that loads questions from a JSON file, randomizes ord
 
 ---
 
-## 2. Kanban Board (`kanban.js`)
+## 2. TaskHub (`taskhub.js` + `modules/`)
 
 ### Overview
-A full-featured **Kanban task board** with drag-and-drop support (desktop + touch), priorities, timers, notes with images, and multiple clock types.
+A full-featured **productivity hub** with task management (kanban board), notebook system, timezone clocks, and comprehensive export/import capabilities.
+
+### Architecture
+TaskHub uses **ES Modules** for clean separation of concerns:
+
+```
+scripts/
+├── taskhub.js          # Main entry point, imports and initializes all modules
+└── modules/
+    ├── state.js        # Shared state management
+    ├── storage.js      # LocalStorage operations
+    ├── database.js     # IndexedDB for images
+    ├── tasks.js        # Task CRUD operations
+    ├── modal.js        # Task detail modal
+    ├── sub-kanban.js   # Sub-task boards
+    ├── drag-drop.js    # Kanban drag & drop
+    ├── timer.js        # Time tracking
+    ├── priority.js     # Priority management
+    ├── images.js       # Image paste & viewer
+    ├── clocks.js       # Timezone clocks & chronometers
+    ├── timezones.js    # Timezone data
+    ├── notebook.js     # Notebook sidebar system
+    ├── notebook-export.js # Notebook PDF/ZIP export
+    ├── export.js       # Task PDF/HTML export
+    └── utils.js        # Shared utilities
+```
 
 ### Key Features
 
 #### Task Management
 - **Add, edit, delete tasks** across four columns: To Do, In Progress, On Hold, Done
+- **Sub-tasks**: Mini kanban boards within each task
 - **Priority system**: None, Low, Medium, High with color-coded cards
   - Quick priority menu on cards
   - Priority selector in task modal
@@ -51,7 +77,13 @@ A full-featured **Kanban task board** with drag-and-drop support (desktop + touc
   - Quick add/subtract time buttons (+1m to +60m)
   - Timer displayed on cards and in modal
   - Time changes logged in history
-- **History tracking**: All actions logged with timestamps (created, moved, edited, timer, priority)
+- **History tracking**: All actions logged with timestamps and color-coded by type
+
+#### Notebook System
+- **Sidebar**: Collapsible notebook with folder/page tree
+- **Folders**: Organize pages into nested folders
+- **Pages**: Rich text editor for notes with image support
+- **Export/Import**: ZIP export with full content, PDF generation
 
 #### Notes System
 - **Plain text only**: No formatting allowed (bold, italic, etc. blocked)
@@ -76,7 +108,8 @@ A full-featured **Kanban task board** with drag-and-drop support (desktop + touc
 #### Export/Import
 - **HTML export**: Export entire board with all tasks and history
 - **PDF export**: Export individual tasks with notes, images, timer, priority
-- **Import**: Load previously exported HTML files
+- **ZIP export**: Export notebook with full content (reimportable)
+- **Import**: Load previously exported HTML or ZIP files
 
 #### Data Persistence
 - Tasks stored in `localStorage`
@@ -140,7 +173,7 @@ Compares total hours against required thresholds:
 
 - Runs in any modern browser (no external libraries needed except jsPDF for PDF export)
 - Requires internet access for **holiday API** (WIM Calculator)
-- jsPDF loaded via CDN in `kanban.html`
+- jsPDF and JSZip loaded via CDN in `taskhub.html`
 
 ---
 
@@ -149,5 +182,5 @@ Compares total hours against required thresholds:
 1. Open the HTML page including the desired script
 2. Ensure elements with expected IDs exist in the HTML
 3. For the quiz: Place `questions.json` in `/data/`
-4. For Kanban: Interact with tasks, clocks auto-update, data auto-saves
+4. For TaskHub: Interact with tasks, clocks auto-update, data auto-saves
 5. For WIM Calculator: Select a date, input attendance, view compliance

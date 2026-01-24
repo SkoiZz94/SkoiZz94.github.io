@@ -16,7 +16,8 @@ The overall design uses an **Inspired glassmorphism** aesthetic:
   - Orange (`#ff9800`) for warnings/medium priority
   - Red (`#f44336`) for errors/high priority
   - Cyan (`#26c6da`) for priority changes in history
-  - Purple (`#ab47bc`) for status changes
+  - Purple (`#ab47bc`) for status changes (main board)
+  - Pink (`#ec407a`) for sub-task operations
   - Blue (`#64b5f6`) for created/info
 - **Rounded corners**: 10-16px border-radius throughout
 - **Soft shadows**: Multiple layered shadows for depth
@@ -39,9 +40,9 @@ The overall design uses an **Inspired glassmorphism** aesthetic:
 
 ---
 
-### 2. `kanban-styles.css`
+### 2. `taskhub-styles.css`
 
-**Purpose**: Full Kanban board styling with tasks, modals, clocks, and priorities
+**Purpose**: Full TaskHub styling with kanban board, notebook, modals, clocks, and priorities
 
 **Key Elements**:
 - **Board Layout**:
@@ -53,6 +54,10 @@ The overall design uses an **Inspired glassmorphism** aesthetic:
   - `.priority-display` - Priority label on cards
   - `.worked-time` - Timer display
   - `.timestamp` - Creation date
+- **Sub-Tasks**:
+  - `.sub-kanban-header` - Collapsible section header
+  - `.sub-kanban-board` - Mini kanban within task modal
+  - `.sub-task` - Sub-task cards with 2-line title limit
 - **Modals**:
   - `.modal` - Full-screen overlay with blur
   - `.modal-content` - Glassmorphism panel
@@ -64,6 +69,10 @@ The overall design uses an **Inspired glassmorphism** aesthetic:
   - `.image-modal` - Full-screen image display
   - `.image-controls` - Zoom buttons
   - `.image-container` - Centered image with pan support
+- **Notebook Sidebar**:
+  - `.notebook-sidebar` - Collapsible sidebar (400px width)
+  - `.notebook-tree` - Folder/page tree structure
+  - `.page-modal` - Note page editor modal
 - **Clocks**:
   - `.clock` - Timezone clock cards
   - `.chronometer-controls` - Start/pause/reset buttons
@@ -135,8 +144,8 @@ Training sub-pages use `.nav-buttons` for dual buttons (Home + Back to Trainings
 
 ## Responsive Design
 
-- **Desktop** (>1200px): Full 4-column Kanban, all features visible
-- **Tablet** (≤1024px): 2-column Kanban, stacked notes areas
+- **Desktop** (>1200px): Full 4-column board, all features visible
+- **Tablet** (≤1024px): 2-column board, stacked notes areas
 - **Mobile** (≤640px): Single column, touch-optimized controls
 
 ---

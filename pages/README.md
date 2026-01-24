@@ -10,26 +10,28 @@ All pages share:
 
 ---
 
-## 1. Kanban Board (`kanban.html`)
+## 1. TaskHub (`taskhub.html`)
 
 ### Purpose
-A full-featured task management board with drag-and-drop, priorities, timers, and clocks.
+A full-featured productivity hub with task management (kanban board), notebook system, timezone clocks, and comprehensive export/import capabilities.
 
 ### Structure
 - **Navigation**: Home button (top-left)
 - **Clock Container**: Timezone clocks and chronometers
 - **Controls**: Task input field and Add button
 - **Kanban Board**: Four columns (To Do, In Progress, On Hold, Done)
+- **Notebook Sidebar**: Collapsible sidebar with folders and pages for notes
 - **Notes Area**: Permanent and temporary text areas
 - **Export/Import**: HTML export and file import buttons
-- **Task Modal**: Detailed task view with notes, priority, timer, history
-- **Image Modal**: Full-screen image viewer with zoom
+- **Task Modal**: Detailed task view with notes, sub-tasks, priority, timer, history
+- **Image Modal**: Full-screen image viewer with zoom and pan
 - **Clock Modal**: Add timezone clocks or chronometers
 
 **Linked Assets**:
-- `kanban-styles.css`
-- `kanban.js`
-- jsPDF (CDN)
+- `taskhub-styles.css`
+- `taskhub.js` (ES modules entry point)
+- `modules/` folder with modular JS files
+- jsPDF and JSZip (CDN)
 
 ---
 
