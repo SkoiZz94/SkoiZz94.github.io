@@ -9,7 +9,7 @@ It provides interactive tools, training resources, and curated references, all o
 
 The **home page** (`index.html`) acts as the main entry point with navigation buttons to all sections:
 
-- **Personal Kanban Board** → `pages/kanban.html`
+- **TaskHub** → `pages/taskhub.html`
 - **WIM Calculator** → `pages/wincalc.html`
 - **Trainings** → `pages/trainingsindex.html`
 - **Entertainment DB** → External link
@@ -22,17 +22,18 @@ Each section has its own purpose and supporting assets (HTML, CSS, JS, JSON, and
 ## Folder Breakdown
 
 - **`pages/`** → Contains the main HTML files for all sections
-  - `kanban.html` → Interactive Kanban board with task management, timers, priorities, and export
+  - `taskhub.html` → TaskHub: Task management with kanban board, notebook, clocks, timers, and export
   - `wincalc.html` → Work In Motion (WIM) calculator with form and results
   - `trainingsindex.html` → Training modules hub (Linux, Python, CyberArk)
   - `usefulstuff.html` → Curated list of external resources
 
 - **`styles/`** → All CSS files for styling the website
   - Modern glassmorphism dark theme with blur effects
-  - Separate stylesheets for each page (e.g., `kanban-styles.css`, `wincalc-styles.css`)
+  - Separate stylesheets for each page (e.g., `taskhub-styles.css`, `wincalc-styles.css`)
 
 - **`scripts/`** → JavaScript files powering interactivity
-  - `kanban.js` → Handles tasks, drag-and-drop, timers, priorities, clocks, and export
+  - `taskhub.js` → Main entry point for TaskHub (ES modules)
+  - `modules/` → Modular JS files for TaskHub functionality
   - `wincalc.js` → Handles calculator logic with holiday API integration
   - `cyberark.js` → Handles CyberArk quiz logic
 
@@ -47,15 +48,17 @@ Each section has its own purpose and supporting assets (HTML, CSS, JS, JSON, and
 
 ## Features
 
-### Personal Kanban Board
-- Four columns: To Do, In Progress, On Hold, Done
+### TaskHub
+- **Kanban Board**: Four columns (To Do, In Progress, On Hold, Done)
+- **Sub-Tasks**: Mini kanban boards within tasks
 - **Priority system**: None, Low, Medium, High with color-coded cards
 - **Task timer**: Track worked time with quick add/subtract buttons
 - **Rich notes**: Plain text notes with image paste support (clipboard)
 - **Image viewer**: Full-screen view with scroll wheel zoom and drag-to-pan
+- **Notebook**: Sidebar with folders and pages for notes, supports export/import
 - **Clocks**: Multiple timezone clocks and chronometers
-- **History tracking**: All actions logged (created, moved, timer, priority changes)
-- **Export/Import**: HTML board export and PDF task export
+- **History tracking**: All actions logged (created, moved, timer, priority, sub-tasks)
+- **Export/Import**: HTML board export, PDF task export, ZIP notebook export
 - **IndexedDB**: Persistent image storage
 
 ### WIM Calculator
@@ -102,8 +105,21 @@ This project is fully documented in a modular way:
    git clone <repo-url>
    cd <repo-folder>
    ```
-2. Open `index.html` in your browser
-3. Navigate via the buttons to explore each tool and section
+
+2. Start a local server (required for ES modules in TaskHub)
+   ```bash
+   # Python 3
+   python -m http.server 8000
+
+   # Python 2
+   python -m SimpleHTTPServer 8000
+   ```
+
+3. Open `http://localhost:8000` in your browser
+
+4. Navigate via the buttons to explore each tool and section
+
+> **Note**: TaskHub uses ES modules which require HTTP serving. Opening `index.html` directly via `file://` will cause module loading errors. Other pages (WIM Calculator, Trainings) work without a server.
 
 ---
 
@@ -111,4 +127,4 @@ This project is fully documented in a modular way:
 
 - Add more training modules
 - Expand the quiz dataset under `data/`
-- Additional Kanban features (filters, search, tags)
+- Additional TaskHub features (filters, search, tags)
