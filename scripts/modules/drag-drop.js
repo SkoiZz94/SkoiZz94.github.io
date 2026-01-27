@@ -4,6 +4,7 @@
 import { draggedItem, setDraggedItem } from './state.js';
 import { saveNotesToLocalStorage } from './storage.js';
 import { updateNoteColumn } from './tasks.js';
+import { sortColumnByPriority } from './sorting.js';
 
 // Reference setter for draggedItem (used by tasks.js)
 export function setDraggedItemRef(item) {
@@ -23,6 +24,9 @@ export function setupDragAndDrop() {
 
         this.appendChild(draggedItem);
         updateNoteColumn(noteId, oldColumnId, newColumnId);
+
+        // Re-sort the target column by priority
+        sortColumnByPriority(newColumnId);
 
         setDraggedItem(null);
         saveNotesToLocalStorage();
@@ -89,6 +93,10 @@ export function enableTouchDrag(noteEl, openTaskModalFn) {
 
         dropCol.appendChild(draggedItem);
         updateNoteColumn(noteId, oldColumnId, newColumnId);
+
+        // Re-sort the target column by priority
+        sortColumnByPriority(newColumnId);
+
         saveNotesToLocalStorage();
       }
     } else {

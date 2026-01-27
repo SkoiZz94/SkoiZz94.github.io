@@ -4,6 +4,7 @@
 import * as state from './state.js';
 import { saveNotesToLocalStorage } from './storage.js';
 import { updateNoteCardDisplay } from './tasks.js';
+import { sortColumnByPriority } from './sorting.js';
 
 export function getPriorityLabel(priority) {
   switch (priority) {
@@ -98,6 +99,9 @@ export function quickSetPriority(taskId, priority) {
   saveNotesToLocalStorage();
   updateNoteCardDisplay(taskId);
   updateNoteCardPriority(taskId);
+
+  // Re-sort the column after priority change
+  sortColumnByPriority(task.column);
 }
 
 export function updateNoteCardPriority(taskId) {

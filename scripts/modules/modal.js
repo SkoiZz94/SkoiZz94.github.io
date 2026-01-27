@@ -6,6 +6,7 @@ import { saveNotesToLocalStorage } from './storage.js';
 import { storeImage, getImage, deleteImagesByIds } from './database.js';
 import { formatTime, escapeHtml, getTextPreview } from './utils.js';
 import { getPriorityLabel, updateModalPriorityButtons, updateNoteCardPriority } from './priority.js';
+import { sortColumnByPriority } from './sorting.js';
 import { renderSubKanban } from './sub-kanban.js';
 import { openImageViewer } from './images.js';
 import { updateNoteCardDisplay, setOpenTaskModal } from './tasks.js';
@@ -534,6 +535,8 @@ export async function saveAndCloseModal() {
       type: 'priority'
     });
     updateNoteCardPriority(state.currentTaskId);
+    // Re-sort the column after priority change
+    sortColumnByPriority(task.column);
   }
 
   // Save all pending timer actions in a single summary entry

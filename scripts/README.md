@@ -55,6 +55,7 @@ scripts/
     ├── drag-drop.js    # Kanban drag & drop
     ├── timer.js        # Time tracking
     ├── priority.js     # Priority management
+    ├── sorting.js      # Priority-based column sorting
     ├── images.js       # Image paste & viewer
     ├── clocks.js       # Timezone clocks & chronometers
     ├── timezones.js    # Timezone data
@@ -73,6 +74,12 @@ scripts/
   - Quick priority menu on cards
   - Priority selector in task modal
   - Priority changes logged in history
+  - **Auto-sorting by priority**: Columns automatically sort when:
+    - Page loads (all columns sorted)
+    - Task is moved via drag-and-drop
+    - Priority is changed (quick menu or modal)
+    - New task is created
+  - Sort order: High → Medium → Low → None (except To Do: new tasks at top)
 - **Task timer**: Track worked time per task
   - Quick add/subtract time buttons (+1m to +60m)
   - Timer displayed on cards and in modal

@@ -59,6 +59,7 @@ import {
   exportBoardAsHTML,
   importBoardFromFile
 } from './modules/export.js';
+import { sortAllColumnsByPriority } from './modules/sorting.js';
 import {
   toggleNotebookSidebar,
   renderNotebookTree,
@@ -163,6 +164,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (col) col.appendChild(noteElement);
     }
   });
+
+  // Sort all columns by priority after loading
+  sortAllColumnsByPriority();
 
   setupDragAndDrop();
   setupClipboardPaste();
