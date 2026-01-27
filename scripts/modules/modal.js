@@ -65,6 +65,18 @@ export async function openTaskModal(taskId) {
   // Render sub-kanban board
   renderSubKanban(task);
 
+  // Render tags selector
+  const tagsContainer = document.getElementById('tagsContainer');
+  if (tagsContainer && window.renderTagSelector) {
+    window.renderTagSelector(taskId, tagsContainer);
+  }
+
+  // Render due date picker
+  const dueDateContainer = document.getElementById('dueDateContainer');
+  if (dueDateContainer && window.renderDueDatePicker) {
+    window.renderDueDatePicker(taskId, dueDateContainer);
+  }
+
   modal.style.display = 'block';
 }
 

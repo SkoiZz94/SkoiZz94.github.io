@@ -5,79 +5,45 @@ import * as state from './state.js';
 import { saveNotesToLocalStorage } from './storage.js';
 import { updateNoteCardDisplay } from './tasks.js';
 import { sortColumnByPriority } from './sorting.js';
+import { showContextMenu } from './context-menu.js';
+
+// Priority definitions (centralized)
+export const PRIORITIES = [
+  { value: null, label: 'None', color: 'rgba(255, 255, 255, 0.5)' },
+  { value: 'low', label: 'Low', color: '#4caf50' },
+  { value: 'medium', label: 'Medium', color: '#ff9800' },
+  { value: 'high', label: 'High', color: '#f44336' }
+];
 
 export function getPriorityLabel(priority) {
-  switch (priority) {
-    case 'low': return 'Low';
-    case 'medium': return 'Medium';
-    case 'high': return 'High';
-    default: return 'None';
-  }
+  const found = PRIORITIES.find(p => p.value === priority);
+  return found ? found.label : 'None';
 }
 
 export function getPriorityColor(priority) {
-  switch (priority) {
-    case 'low': return '#4caf50'; // Green
-    case 'medium': return '#ff9800'; // Orange
-    case 'high': return '#f44336'; // Red
-    default: return 'rgba(255, 255, 255, 0.5)'; // Neutral gray for none
-  }
+  const found = PRIORITIES.find(p => p.value === priority);
+  return found ? found.color : PRIORITIES[0].color;
 }
 
 export function showQuickPriorityMenu(taskId, buttonElement) {
-  // Remove any existing menu
-  const existingMenu = document.querySelector('.quick-priority-menu');
-  if (existingMenu) {
-    existingMenu.remove();
-    return;
-  }
-
   const task = state.notesData.find(t => t.id === taskId);
   if (!task) return;
 
-  const menu = document.createElement('div');
-  menu.classList.add('quick-priority-menu');
+  const items = PRIORITIES.map(priority => ({
+    label: priority.label,
+    value: priority.value,
+    color: priority.color,
+    active: task.priority === priority.value
+  }));
 
-  const priorities = [
-    { value: null, label: 'None', color: 'rgba(255, 255, 255, 0.5)' },
-    { value: 'low', label: 'Low', color: '#4caf50' },
-    { value: 'medium', label: 'Medium', color: '#ff9800' },
-    { value: 'high', label: 'High', color: '#f44336' }
-  ];
-
-  priorities.forEach(priority => {
-    const btn = document.createElement('button');
-    btn.textContent = priority.label;
-    btn.style.borderColor = priority.color;
-    btn.style.color = priority.color;
-    if (task.priority === priority.value) {
-      btn.classList.add('active');
+  showContextMenu({
+    anchorElement: buttonElement,
+    menuClass: 'quick-priority-menu',
+    items,
+    onSelect: (value) => {
+      quickSetPriority(taskId, value);
     }
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      quickSetPriority(taskId, priority.value);
-      menu.remove();
-    };
-    menu.appendChild(btn);
   });
-
-  // Position menu near the button
-  const rect = buttonElement.getBoundingClientRect();
-  menu.style.position = 'fixed';
-  menu.style.top = `${rect.bottom + 5}px`;
-  menu.style.left = `${rect.left}px`;
-
-  document.body.appendChild(menu);
-
-  // Close menu when clicking outside
-  setTimeout(() => {
-    document.addEventListener('click', function closeMenu(e) {
-      if (!menu.contains(e.target) && !buttonElement.contains(e.target)) {
-        menu.remove();
-        document.removeEventListener('click', closeMenu);
-      }
-    });
-  }, 100);
 }
 
 export function quickSetPriority(taskId, priority) {

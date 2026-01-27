@@ -4,12 +4,16 @@
 import * as state from './state.js';
 import { saveNotesToLocalStorage } from './storage.js';
 import { deleteTaskImages } from './database.js';
-import { getColumnName, formatTime, getFirstLine } from './utils.js';
+import { getColumnName, formatTime, getFirstLine, validateTitle, MAX_TITLE_LENGTH } from './utils.js';
 import { getPriorityLabel, getPriorityColor, showQuickPriorityMenu } from './priority.js';
 import { sortColumnByPriority } from './sorting.js';
-import { showQuickTimeMenu } from './timer.js';
+import { showQuickTimeMenu, LONG_PRESS_THRESHOLD } from './timer.js';
 import { exportTaskAsPDF } from './export.js';
 import { enableTouchDrag, setDraggedItemRef } from './drag-drop.js';
+import { moveToTrash, recordAction } from './undo.js';
+import { renderTaskTagsHTML, getTaskTags } from './tags.js';
+import { renderDueDateHTML, getDueDateStatus } from './due-dates.js';
+import { deepClone } from './utils.js';
 
 // Forward declaration for openTaskModal (will be set from modal.js)
 let openTaskModalFn = null;
@@ -20,7 +24,7 @@ export function setOpenTaskModal(fn) {
 export function addNote() {
   const input = document.getElementById('newNote');
   if (!input) return;
-  const noteText = input.value;
+  const noteText = validateTitle(input.value);
   if (noteText.trim() !== '') {
     const id = Date.now();
     const timestamp = new Date().toLocaleString();
@@ -30,9 +34,20 @@ export function addNote() {
       noteEntries: [],
       timer: 0,
       priority: null,
+      tags: [],
+      dueDate: null,
       column: 'todo',
       actions: [{ action: 'Created', timestamp, type: 'created' }]
     };
+
+    // Record for undo
+    recordAction({
+      type: 'create',
+      taskId: id,
+      previousState: null,
+      newState: deepClone(newNote),
+      description: `Create task "${noteText.substring(0, 30)}..."`
+    });
 
     state.pushToNotesData(newNote);
     saveNotesToLocalStorage();
@@ -43,6 +58,11 @@ export function addNote() {
       todoCol.appendChild(noteElement);
       // Sort the todo column to place new task at top (since it has no priority)
       sortColumnByPriority('todo');
+    }
+
+    // Update column counts
+    if (window.updateColumnCounts) {
+      window.updateColumnCounts();
     }
 
     input.value = '';
@@ -86,19 +106,38 @@ export function deleteTaskFromModal() {
 export async function deleteNote(id, addToHistory = true) {
   const noteIndex = state.notesData.findIndex(n => n.id === id);
   if (noteIndex !== -1) {
+    const task = state.notesData[noteIndex];
+
+    // Record for undo before modifying
+    recordAction({
+      type: 'delete',
+      taskId: id,
+      previousState: deepClone(task),
+      newState: null,
+      description: `Delete task "${task.title.substring(0, 30)}..."`
+    });
+
+    // Move to trash for recovery
+    moveToTrash(deepClone(task));
+
     await deleteTaskImages(id);
 
-    state.notesData[noteIndex].deleted = true;
+    task.deleted = true;
 
     if (addToHistory) {
       const timestamp = new Date().toLocaleString();
-      state.notesData[noteIndex].actions.push({ action: 'Deleted', timestamp, type: 'deleted' });
+      task.actions.push({ action: 'Deleted', timestamp, type: 'deleted' });
     }
 
     saveNotesToLocalStorage();
 
     const domEl = document.querySelector(`[data-id='${id}']`);
     if (domEl) domEl.remove();
+
+    // Update column counts
+    if (window.updateColumnCounts) {
+      window.updateColumnCounts();
+    }
   }
 }
 
@@ -213,7 +252,7 @@ export function createNoteElement(content) {
     pressTimer = setTimeout(() => {
       isLongPress = true;
       showQuickTimeMenu(content.id, timerButton, true); // subtract mode
-    }, 500); // 500ms for long press
+    }, LONG_PRESS_THRESHOLD);
   };
 
   timerButton.onmouseup = function (e) {
@@ -252,7 +291,7 @@ export function createNoteElement(content) {
     pressTimer = setTimeout(() => {
       isLongPress = true;
       showQuickTimeMenu(content.id, timerButton, true); // subtract mode
-    }, 500);
+    }, LONG_PRESS_THRESHOLD);
   };
 
   timerButton.ontouchend = function (e) {
@@ -308,6 +347,29 @@ export function createNoteElement(content) {
 
   note.appendChild(noteContent);
   note.appendChild(noteText);
+
+  // Add tags display
+  const tagsHtml = renderTaskTagsHTML(content.id);
+  if (tagsHtml) {
+    const tagsContainer = document.createElement('div');
+    tagsContainer.innerHTML = tagsHtml;
+    note.appendChild(tagsContainer.firstChild);
+  }
+
+  // Add due date display
+  const dueDateHtml = renderDueDateHTML(content.id);
+  if (dueDateHtml) {
+    const dueDateContainer = document.createElement('div');
+    dueDateContainer.innerHTML = dueDateHtml;
+    note.appendChild(dueDateContainer.firstChild);
+
+    // Add overdue class to card if needed
+    const status = getDueDateStatus(content.id);
+    if (status === 'overdue') {
+      note.classList.add('task-overdue');
+    }
+  }
+
   note.appendChild(timestamp);
   note.appendChild(priorityDisplay);
   note.appendChild(workedTime);
@@ -374,6 +436,54 @@ export function updateNoteCardDisplay(taskId) {
   const workedTime = noteElement.querySelector('.worked-time');
   if (workedTime) {
     workedTime.textContent = `Worked Time: ${formatTime(task.timer || 0)}`;
+  }
+
+  // Update tags display
+  let tagsDisplay = noteElement.querySelector('.task-tags');
+  const tagsHtml = renderTaskTagsHTML(taskId);
+  if (tagsHtml) {
+    if (!tagsDisplay) {
+      const container = document.createElement('div');
+      container.innerHTML = tagsHtml;
+      const noteText = noteElement.querySelector('.note-text');
+      if (noteText && noteText.nextSibling) {
+        noteElement.insertBefore(container.firstChild, noteText.nextSibling);
+      }
+    } else {
+      const container = document.createElement('div');
+      container.innerHTML = tagsHtml;
+      tagsDisplay.replaceWith(container.firstChild);
+    }
+  } else if (tagsDisplay) {
+    tagsDisplay.remove();
+  }
+
+  // Update due date display
+  let dueDateDisplay = noteElement.querySelector('.task-due-date');
+  const dueDateHtml = renderDueDateHTML(taskId);
+  if (dueDateHtml) {
+    if (!dueDateDisplay) {
+      const container = document.createElement('div');
+      container.innerHTML = dueDateHtml;
+      const tagsEl = noteElement.querySelector('.task-tags');
+      const noteText = noteElement.querySelector('.note-text');
+      if (tagsEl) {
+        tagsEl.after(container.firstChild);
+      } else if (noteText) {
+        noteText.after(container.firstChild);
+      }
+    } else {
+      const container = document.createElement('div');
+      container.innerHTML = dueDateHtml;
+      dueDateDisplay.replaceWith(container.firstChild);
+    }
+
+    // Update overdue class
+    const status = getDueDateStatus(taskId);
+    noteElement.classList.toggle('task-overdue', status === 'overdue');
+  } else if (dueDateDisplay) {
+    dueDateDisplay.remove();
+    noteElement.classList.remove('task-overdue');
   }
 
   // Update sub-task indicator
