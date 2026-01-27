@@ -6,6 +6,7 @@ import { saveNotesToLocalStorage } from './storage.js';
 import { deleteTaskImages } from './database.js';
 import { getColumnName, formatTime, getFirstLine } from './utils.js';
 import { getPriorityLabel, getPriorityColor, showQuickPriorityMenu } from './priority.js';
+import { sortColumnByPriority } from './sorting.js';
 import { showQuickTimeMenu } from './timer.js';
 import { exportTaskAsPDF } from './export.js';
 import { enableTouchDrag, setDraggedItemRef } from './drag-drop.js';
@@ -38,7 +39,11 @@ export function addNote() {
 
     const noteElement = createNoteElement(newNote);
     const todoCol = document.getElementById('todo');
-    if (todoCol) todoCol.appendChild(noteElement);
+    if (todoCol) {
+      todoCol.appendChild(noteElement);
+      // Sort the todo column to place new task at top (since it has no priority)
+      sortColumnByPriority('todo');
+    }
 
     input.value = '';
   }

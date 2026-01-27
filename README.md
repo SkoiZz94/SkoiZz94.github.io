@@ -52,6 +52,7 @@ Each section has its own purpose and supporting assets (HTML, CSS, JS, JSON, and
 - **Kanban Board**: Four columns (To Do, In Progress, On Hold, Done)
 - **Sub-Tasks**: Mini kanban boards within tasks
 - **Priority system**: None, Low, Medium, High with color-coded cards
+- **Auto-sorting**: Tasks automatically sort by priority within each column
 - **Task timer**: Track worked time with quick add/subtract buttons
 - **Rich notes**: Plain text notes with image paste support (clipboard)
 - **Image viewer**: Full-screen view with scroll wheel zoom and drag-to-pan
