@@ -11,7 +11,8 @@ import {
   saveNotesToLocalStorage,
   loadNotebookFromLocalStorage,
   loadPermanentNotes,
-  savePermanentNotes
+  savePermanentNotes,
+  setAutoSaveCallback
 } from './modules/storage.js';
 import {
   loadClocks,
@@ -59,7 +60,7 @@ import {
   exportBoardAsHTML,
   importBoardFromFile
 } from './modules/export.js';
-import { sortAllColumnsByPriority } from './modules/sorting.js';
+import { sortAllColumnsByPriority, sortColumnByPriority } from './modules/sorting.js';
 import {
   toggleNotebookSidebar,
   renderNotebookTree,
@@ -76,7 +77,15 @@ import {
   exportPageAsPDF,
   exportAllNotebook
 } from './modules/notebook-export.js';
-// Mentions system removed
+
+// New feature imports
+import { showNotification, showSuccess, showError, warnIfStorageHigh } from './modules/notifications.js';
+import { initSearch, setSearchTerm, setColumnFilter, clearFilters, applyFilters } from './modules/search.js';
+import { initTags, renderTagSelector, renderTaskTagsHTML, cleanupUnusedTags } from './modules/tags.js';
+import { renderDueDatePicker, renderDueDateHTML } from './modules/due-dates.js';
+import { initUndo, undo, redo, getTrashedTasks, restoreFromTrash, permanentlyDelete, emptyTrash, getTrashCount, moveToTrash } from './modules/undo.js';
+import { showLoading, hideLoading } from './modules/loading.js';
+import { debounce } from './modules/utils.js';
 
 /***********************
  * EXPOSE FUNCTIONS TO GLOBAL SCOPE
@@ -140,6 +149,164 @@ window.exportPageAsPDF = exportPageAsPDF;
 window.exportAllNotebook = exportAllNotebook;
 window.importNotebookFromZip = importNotebookFromZip;
 
+// Undo/Redo
+window.undo = undo;
+window.redo = redo;
+
+// Trash
+window.toggleTrashPanel = toggleTrashPanel;
+window.restoreFromTrashUI = restoreFromTrashUI;
+window.permanentDeleteUI = permanentDeleteUI;
+window.emptyAllTrash = emptyAllTrash;
+
+// Search
+window.clearFilters = clearFilters;
+
+/***********************
+ * TRASH PANEL FUNCTIONS
+ ***********************/
+function toggleTrashPanel() {
+  const panel = document.getElementById('trashPanel');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    renderTrashList();
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function renderTrashList() {
+  const list = document.getElementById('trashList');
+  const trashed = getTrashedTasks();
+  const countBadge = document.getElementById('trashCount');
+
+  if (countBadge) {
+    countBadge.textContent = trashed.length;
+    countBadge.style.display = trashed.length > 0 ? 'flex' : 'none';
+  }
+
+  if (trashed.length === 0) {
+    list.innerHTML = '<div class="trash-empty-message">Trash is empty</div>';
+    return;
+  }
+
+  list.innerHTML = trashed.map(task => `
+    <div class="trash-item" data-id="${task.id}">
+      <div class="trash-item-info">
+        <div class="trash-item-title">${escapeHtmlLocal(task.title)}</div>
+        <div class="trash-item-date">Deleted: ${formatTrashDate(task.trashedAt)}</div>
+      </div>
+      <div class="trash-item-actions">
+        <button class="restore-btn" onclick="restoreFromTrashUI('${task.id}')">Restore</button>
+        <button class="permanent-delete-btn" onclick="permanentDeleteUI('${task.id}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function restoreFromTrashUI(taskId) {
+  // Convert string to number (task IDs are Date.now() timestamps)
+  const numericId = typeof taskId === 'string' ? parseInt(taskId, 10) : taskId;
+  const task = restoreFromTrash(numericId);
+  if (task) {
+    // Remove deleted flag
+    delete task.deleted;
+
+    state.notesData.push(task);
+    saveNotesToLocalStorage();
+
+    // Re-render the task
+    const noteElement = createNoteElement(task);
+    const col = document.getElementById(task.column);
+    if (col) col.appendChild(noteElement);
+
+    sortAllColumnsByPriority();
+    applyFilters();
+    updateColumnCounts();
+    renderTrashList();
+    showSuccess('Task restored');
+  }
+}
+
+function permanentDeleteUI(taskId) {
+  // Convert string to number
+  const numericId = typeof taskId === 'string' ? parseInt(taskId, 10) : taskId;
+  if (confirm('Permanently delete this task? This cannot be undone.')) {
+    permanentlyDelete(numericId);
+    renderTrashList();
+    showSuccess('Task permanently deleted');
+  }
+}
+
+function emptyAllTrash() {
+  const count = getTrashCount();
+  if (count === 0) return;
+
+  if (confirm(`Permanently delete all ${count} item(s) in trash? This cannot be undone.`)) {
+    emptyTrash();
+    renderTrashList();
+    showSuccess('Trash emptied');
+  }
+}
+
+function formatTrashDate(timestamp) {
+  const date = new Date(timestamp);
+  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function escapeHtmlLocal(str) {
+  return String(str).replace(/[&<>"']/g, s => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+  }[s]));
+}
+
+/***********************
+ * AUTO-SAVE INDICATOR
+ ***********************/
+function showAutoSaveIndicator() {
+  const indicator = document.getElementById('autoSaveIndicator');
+  if (indicator) {
+    indicator.textContent = 'Saved';
+    indicator.classList.add('visible', 'success');
+    setTimeout(() => {
+      indicator.classList.remove('visible', 'success');
+    }, 2000);
+  }
+}
+
+/***********************
+ * COLUMN COUNTS
+ ***********************/
+function updateColumnCounts() {
+  const columns = ['todo', 'inProgress', 'onHold', 'done'];
+
+  columns.forEach(columnId => {
+    const column = document.getElementById(columnId);
+    if (!column) return;
+
+    const header = column.querySelector('h2');
+    if (!header) return;
+
+    // Create or update count span
+    let countSpan = header.querySelector('.column-count');
+    if (!countSpan) {
+      countSpan = document.createElement('span');
+      countSpan.className = 'column-count';
+      header.appendChild(countSpan);
+    }
+
+    const taskCount = column.querySelectorAll('.note').length;
+    countSpan.textContent = taskCount > 0 ? `(${taskCount})` : '';
+  });
+}
+
+// Export for use in other modules
+window.updateColumnCounts = updateColumnCounts;
+
+// Make renderTagSelector and renderDueDatePicker available
+window.renderTagSelector = renderTagSelector;
+window.renderDueDatePicker = renderDueDatePicker;
+
 /***********************
  * NAVIGATION GUARD
  ***********************/
@@ -155,6 +322,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initIndexedDB();
   loadClocks();
 
+  // Initialize new feature modules
+  initTags();
+  initUndo();
+  initSearch();
+
+  // Set up auto-save callback
+  setAutoSaveCallback(showAutoSaveIndicator);
+
   // Load notes and render them
   const notes = loadNotesFromLocalStorage();
   notes.forEach(note => {
@@ -165,8 +340,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // Clean up any orphan tags (tags not used by any task)
+  cleanupUnusedTags();
+
   // Sort all columns by priority after loading
   sortAllColumnsByPriority();
+
+  // Apply any active filters
+  applyFilters();
+
+  // Update column counts
+  updateColumnCounts();
+
+  // Check storage quota on load
+  warnIfStorageHigh();
+
+  // Render trash count
+  renderTrashList();
 
   setupDragAndDrop();
   setupClipboardPaste();
@@ -179,11 +369,94 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // Search input handling
+  const searchInput = document.getElementById('taskSearchInput');
+  const clearSearchBtn = document.getElementById('clearSearchBtn');
+
+  if (searchInput) {
+    const debouncedSearch = debounce((value) => {
+      setSearchTerm(value);
+      clearSearchBtn.style.display = value ? 'block' : 'none';
+    }, 200);
+
+    searchInput.addEventListener('input', (e) => {
+      debouncedSearch(e.target.value);
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        searchInput.value = '';
+        setSearchTerm('');
+        clearSearchBtn.style.display = 'none';
+        searchInput.blur();
+      }
+    });
+  }
+
+  if (clearSearchBtn) {
+    clearSearchBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      setSearchTerm('');
+      clearSearchBtn.style.display = 'none';
+    });
+  }
+
+  // Column filter buttons
+  document.querySelectorAll('.column-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.column-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      setColumnFilter(btn.dataset.column || null);
+    });
+  });
+
   // Auto-save permanent notes on input
   const permanentNotesField = document.getElementById('permanentNotes');
   if (permanentNotesField) {
     permanentNotesField.addEventListener('input', savePermanentNotes);
   }
+
+  // Listen for task events from undo system
+  window.addEventListener('taskhub:taskRestored', (e) => {
+    const task = state.notesData.find(t => t.id === e.detail.taskId);
+    if (task && !task.deleted) {
+      const noteElement = createNoteElement(task);
+      const col = document.getElementById(task.column);
+      if (col) col.appendChild(noteElement);
+      sortAllColumnsByPriority();
+      applyFilters();
+    }
+  });
+
+  window.addEventListener('taskhub:taskRemoved', (e) => {
+    const noteElement = document.querySelector(`[data-id="${e.detail.taskId}"]`);
+    if (noteElement) {
+      noteElement.remove();
+    }
+  });
+
+  window.addEventListener('taskhub:taskUpdated', (e) => {
+    const task = state.notesData.find(t => t.id === e.detail.taskId);
+    if (!task) return;
+
+    // If column changed (e.g., from undo of a move), relocate the card
+    if (e.detail.oldColumn && e.detail.oldColumn !== task.column) {
+      const noteElement = document.querySelector(`[data-id="${e.detail.taskId}"]`);
+      if (noteElement) {
+        const newCol = document.getElementById(task.column);
+        if (newCol) {
+          newCol.appendChild(noteElement);
+        }
+      }
+      sortColumnByPriority(task.column);
+      sortColumnByPriority(e.detail.oldColumn);
+    }
+
+    updateNoteCardDisplay(e.detail.taskId);
+    sortColumnByPriority(task.column);
+    applyFilters();
+    updateColumnCounts();
+  });
 
   // iOS Safari touch support for elements with onclick attributes
   const clockAddButton = document.querySelector('.clock-add-button');

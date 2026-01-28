@@ -80,6 +80,27 @@ The overall design uses an **Inspired glassmorphism** aesthetic:
 - **Quick Menus**:
   - `.quick-time-menu` - Floating time adjustment menu
   - `.quick-priority-menu` - Floating priority selector
+- **Tags**:
+  - `.task-tags` - Tag container on task cards
+  - `.task-tag` - Individual tag chip with color
+  - `.tag-selector` - Tag picker in modal
+  - `.tag-filter-btn` - Tag filter buttons with color-coded states
+- **Due Dates**:
+  - `.task-due-date` - Due date display on cards
+  - `.due-date-today` - Yellow styling for tasks due today
+  - `.due-date-overdue` - Red styling with pulse animation
+  - `.task-due-today` - Yellow border on task cards due today
+  - `.task-overdue` - Red border on overdue task cards
+- **Search & Filters**:
+  - `.search-wrapper` - Search input with icon
+  - `.tag-filters` - Container for tag filter buttons
+- **Undo/Redo & Trash**:
+  - `.undo-redo-controls` - Undo/redo button group
+  - `.trash-toggle` - Trash panel toggle button
+  - `.trash-panel` - Slide-out trash panel
+- **Notifications**:
+  - `.notification-container` - Toast notification stack
+  - `.notification` - Individual toast with icon
 
 ---
 

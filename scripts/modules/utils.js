@@ -2,6 +2,17 @@
  * UTILITY FUNCTIONS
  ***********************/
 
+// Debug flag - set to false for production
+export const DEBUG = false;
+
+// Column name mapping (centralized)
+export const COLUMN_NAMES = {
+  todo: 'To Do',
+  inProgress: 'In Progress',
+  done: 'Done',
+  onHold: 'On Hold'
+};
+
 export function getColumnName(columnId) {
   switch (columnId) {
     case 'todo': return 'To Do';
@@ -70,4 +81,111 @@ export function getImageDimensions(src) {
     };
     img.src = src;
   });
+}
+
+/**
+ * Create a debounced version of a function
+ * @param {Function} func - Function to debounce
+ * @param {number} wait - Wait time in ms
+ * @returns {Function} Debounced function
+ */
+export function debounce(func, wait = 300) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func.apply(this, args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+/**
+ * Create a throttled version of a function
+ * @param {Function} func - Function to throttle
+ * @param {number} limit - Time limit in ms
+ * @returns {Function} Throttled function
+ */
+export function throttle(func, limit = 100) {
+  let inThrottle;
+  return function executedFunction(...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}
+
+/**
+ * Deep clone an object (simple version for JSON-serializable data)
+ * @param {Object} obj - Object to clone
+ * @returns {Object} Cloned object
+ */
+export function deepClone(obj) {
+  if (obj === null || typeof obj !== 'object') return obj;
+  try {
+    return JSON.parse(JSON.stringify(obj));
+  } catch (e) {
+    return obj;
+  }
+}
+
+/**
+ * Sanitize filename for downloads
+ * @param {string} filename - Original filename
+ * @returns {string} Sanitized filename
+ */
+export function sanitizeFilename(filename) {
+  return String(filename)
+    .replace(/[<>:"/\\|?*\x00-\x1f]/g, '-')
+    .replace(/\s+/g, '_')
+    .substring(0, 100);
+}
+
+/**
+ * Check if we're on a touch device
+ * @returns {boolean}
+ */
+export function isTouchDevice() {
+  return 'ontouchstart' in window ||
+         navigator.maxTouchPoints > 0 ||
+         navigator.msMaxTouchPoints > 0;
+}
+
+/**
+ * Get the max input length for titles
+ */
+export const MAX_TITLE_LENGTH = 200;
+
+/**
+ * Get the max input length for notes
+ */
+export const MAX_NOTE_LENGTH = 50000;
+
+/**
+ * Validate and truncate title
+ */
+export function validateTitle(title) {
+  const trimmed = String(title || '').trim();
+  return trimmed.substring(0, MAX_TITLE_LENGTH);
+}
+
+/**
+ * Log debug message (only in debug mode)
+ */
+export function debugLog(...args) {
+  if (DEBUG) {
+    console.log('[TaskHub Debug]', ...args);
+  }
+}
+
+/**
+ * Log warning (only in debug mode)
+ */
+export function debugWarn(...args) {
+  if (DEBUG) {
+    console.warn('[TaskHub Warning]', ...args);
+  }
 }

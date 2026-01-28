@@ -2,9 +2,14 @@
  * TIMER FUNCTIONS
  ***********************/
 import * as state from './state.js';
-import { formatTime } from './utils.js';
+import { formatTime, deepClone } from './utils.js';
 import { saveNotesToLocalStorage } from './storage.js';
 import { updateNoteCardDisplay } from './tasks.js';
+import { showContextMenu, closeActiveMenu } from './context-menu.js';
+import { recordAction } from './undo.js';
+
+// Long-press threshold reduced for better mobile UX
+export const LONG_PRESS_THRESHOLD = 300;
 
 export function addTime(minutes) {
   if (!state.currentTaskId) return;
@@ -32,62 +37,46 @@ export function addTime(minutes) {
 }
 
 export function showQuickTimeMenu(taskId, buttonElement, isSubtract = false) {
-  // Remove any existing menu
-  const existingMenu = document.querySelector('.quick-time-menu');
-  if (existingMenu) {
-    existingMenu.remove();
-    return;
-  }
-
-  const menu = document.createElement('div');
-  menu.classList.add('quick-time-menu');
-  menu.dataset.sourceButton = buttonElement.id || 'timer-btn';
-  if (isSubtract) {
-    menu.classList.add('subtract');
-  }
-
   const times = [1, 5, 10, 15, 30, 60];
-  times.forEach(minutes => {
-    const btn = document.createElement('button');
-    btn.textContent = isSubtract ? `-${minutes}m` : `+${minutes}m`;
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      quickAddTime(taskId, isSubtract ? -minutes : minutes);
-      menu.remove();
-    };
-    menu.appendChild(btn);
+
+  const items = times.map(minutes => ({
+    label: isSubtract ? `-${minutes}m` : `+${minutes}m`,
+    value: isSubtract ? -minutes : minutes
+  }));
+
+  showContextMenu({
+    anchorElement: buttonElement,
+    menuClass: isSubtract ? 'quick-time-menu subtract' : 'quick-time-menu',
+    items,
+    onSelect: (value) => {
+      quickAddTime(taskId, value);
+    }
   });
-
-  // Position menu near the button
-  const rect = buttonElement.getBoundingClientRect();
-  menu.style.position = 'fixed';
-  menu.style.top = `${rect.bottom + 5}px`;
-  menu.style.left = `${rect.left}px`;
-
-  document.body.appendChild(menu);
-
-  // Close menu when clicking outside (but not on the button that opened it)
-  setTimeout(() => {
-    document.addEventListener('click', function closeMenu(e) {
-      if (!menu.contains(e.target) && !buttonElement.contains(e.target)) {
-        menu.remove();
-        document.removeEventListener('click', closeMenu);
-      }
-    });
-  }, 100);
 }
 
 export function quickAddTime(taskId, minutes) {
   const task = state.notesData.find(t => t.id === taskId);
   if (!task) return;
 
+  // Record for undo before modifying
+  const previousState = deepClone(task);
+
   task.timer = Math.max(0, (task.timer || 0) + minutes);
 
   const timestamp = new Date().toLocaleString();
-  const action = minutes > 0
+  const actionText = minutes > 0
     ? `Added ${minutes} minute(s) to timer`
     : `Removed ${Math.abs(minutes)} minute(s) from timer`;
-  task.actions.push({ action, timestamp, type: 'timer' });
+  task.actions.push({ action: actionText, timestamp, type: 'timer' });
+
+  // Record action for undo/redo
+  recordAction({
+    type: 'timer',
+    taskId: taskId,
+    previousState: previousState,
+    newState: deepClone(task),
+    description: actionText
+  });
 
   saveNotesToLocalStorage();
   updateNoteCardDisplay(taskId);

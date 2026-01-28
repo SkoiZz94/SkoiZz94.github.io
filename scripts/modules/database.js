@@ -1,37 +1,59 @@
 /***********************
  * INDEXEDDB SETUP
+ * With improved error handling
  ***********************/
 import { db, setDb, notesData, notebookItems } from './state.js';
+import { showError, showWarning } from './notifications.js';
+import { debugWarn } from './utils.js';
 
 export function initIndexedDB() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open('KanbanDB', 1);
+    try {
+      const request = indexedDB.open('KanbanDB', 1);
 
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => {
-      setDb(request.result);
-      resolve(request.result);
-    };
+      request.onerror = () => {
+        debugWarn('IndexedDB error:', request.error);
+        showError('Failed to open image database. Images may not persist.');
+        reject(request.error);
+      };
 
-    request.onupgradeneeded = (event) => {
-      const database = event.target.result;
-      if (!database.objectStoreNames.contains('images')) {
-        database.createObjectStore('images', { keyPath: 'id' });
-      }
-    };
+      request.onsuccess = () => {
+        setDb(request.result);
+        resolve(request.result);
+      };
+
+      request.onupgradeneeded = (event) => {
+        const database = event.target.result;
+        if (!database.objectStoreNames.contains('images')) {
+          database.createObjectStore('images', { keyPath: 'id' });
+        }
+      };
+    } catch (e) {
+      debugWarn('IndexedDB initialization error:', e);
+      showError('Image storage is not available in this browser.');
+      reject(e);
+    }
   });
 }
 
 // Store image in IndexedDB
 export async function storeImage(taskId, imageId, dataUrl) {
-  if (!db) await initIndexedDB();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(['images'], 'readwrite');
-    const store = transaction.objectStore('images');
-    const request = store.put({ id: `${taskId}_${imageId}`, dataUrl });
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
+  try {
+    if (!db) await initIndexedDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['images'], 'readwrite');
+      const store = transaction.objectStore('images');
+      const request = store.put({ id: `${taskId}_${imageId}`, dataUrl });
+      request.onsuccess = () => resolve();
+      request.onerror = () => {
+        debugWarn('Error storing image:', request.error);
+        reject(request.error);
+      };
+    });
+  } catch (e) {
+    debugWarn('Error storing image:', e);
+    throw e;
+  }
 }
 
 // Get image from IndexedDB

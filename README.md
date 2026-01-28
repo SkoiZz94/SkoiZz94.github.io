@@ -58,9 +58,16 @@ Each section has its own purpose and supporting assets (HTML, CSS, JS, JSON, and
 - **Image viewer**: Full-screen view with scroll wheel zoom and drag-to-pan
 - **Notebook**: Sidebar with folders and pages for notes, supports export/import
 - **Clocks**: Multiple timezone clocks and chronometers
-- **History tracking**: All actions logged (created, moved, timer, priority, sub-tasks)
+- **History tracking**: All actions logged (created, moved, timer, priority, sub-tasks, tags)
 - **Export/Import**: HTML board export, PDF task export, ZIP notebook export
 - **IndexedDB**: Persistent image storage
+- **Task Tags**: Color-coded labels (Urgent, Review, User Story, Incident, Rollout)
+- **Tag Filtering**: Quick filter buttons to show tasks by tag
+- **Due Dates**: Set due dates with visual indicators (yellow for today, red for overdue)
+- **Search**: Real-time search across task titles and notes
+- **Undo/Redo**: Full undo/redo for all actions (Ctrl+Z, Ctrl+Y)
+  - Create/delete tasks, title changes, priority, timer, tags, due dates, notes, moves
+- **Trash**: Deleted tasks recoverable from trash (max 20 items)
 
 ### WIM Calculator
 - Portuguese workday/holiday calculator
@@ -123,9 +130,3 @@ This project is fully documented in a modular way:
 > **Note**: TaskHub uses ES modules which require HTTP serving. Opening `index.html` directly via `file://` will cause module loading errors. Other pages (WIM Calculator, Trainings) work without a server.
 
 ---
-
-## Future Improvements
-
-- Add more training modules
-- Expand the quiz dataset under `data/`
-- Additional TaskHub features (filters, search, tags)

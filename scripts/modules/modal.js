@@ -4,12 +4,14 @@
 import * as state from './state.js';
 import { saveNotesToLocalStorage } from './storage.js';
 import { storeImage, getImage, deleteImagesByIds } from './database.js';
-import { formatTime, escapeHtml, getTextPreview } from './utils.js';
+import { formatTime, escapeHtml, getTextPreview, deepClone } from './utils.js';
 import { getPriorityLabel, updateModalPriorityButtons, updateNoteCardPriority } from './priority.js';
 import { sortColumnByPriority } from './sorting.js';
 import { renderSubKanban } from './sub-kanban.js';
 import { openImageViewer } from './images.js';
 import { updateNoteCardDisplay, setOpenTaskModal } from './tasks.js';
+import { getTagById, cleanupUnusedTags } from './tags.js';
+import { recordAction } from './undo.js';
 
 export async function openTaskModal(taskId) {
   state.setCurrentTaskId(taskId);
@@ -22,6 +24,8 @@ export async function openTaskModal(taskId) {
   state.setOriginalTimerValue(task.timer || 0);
   state.setOriginalPriorityValue(task.priority || null);
   state.setCurrentModalPriority(task.priority || null);
+  state.setOriginalTagsValue(task.tags ? [...task.tags] : []);
+  state.setOriginalTitleValue(task.title || '');
 
   const modal = document.getElementById('taskModal');
   const title = document.getElementById('modalTitle');
@@ -64,6 +68,18 @@ export async function openTaskModal(taskId) {
 
   // Render sub-kanban board
   renderSubKanban(task);
+
+  // Render tags selector
+  const tagsContainer = document.getElementById('tagsContainer');
+  if (tagsContainer && window.renderTagSelector) {
+    window.renderTagSelector(taskId, tagsContainer);
+  }
+
+  // Render due date picker
+  const dueDateContainer = document.getElementById('dueDateContainer');
+  if (dueDateContainer && window.renderDueDatePicker) {
+    window.renderDueDatePicker(taskId, dueDateContainer);
+  }
 
   modal.style.display = 'block';
 }
@@ -451,7 +467,13 @@ export function closeTaskModal() {
   const hasPriorityChanges = state.currentModalPriority !== state.originalPriorityValue;
   const currentTitle = titleEl ? titleEl.textContent.trim() : '';
   const hasTitleChanges = currentTitle && currentTitle !== state.originalTitleValue;
-  const hasRealChanges = hasNoteChanges || hasTimerChanges || hasPriorityChanges || hasTitleChanges;
+
+  // Check for tag changes
+  const currentTags = task?.tags || [];
+  const originalTags = state.originalTagsValue || [];
+  const hasTagChanges = JSON.stringify(currentTags.sort()) !== JSON.stringify([...originalTags].sort());
+
+  const hasRealChanges = hasNoteChanges || hasTimerChanges || hasPriorityChanges || hasTitleChanges || hasTagChanges;
 
   if (state.modalHasChanges && hasRealChanges) {
     if (!confirm('You have unsaved changes. Are you sure you want to close without saving?')) {
@@ -461,6 +483,15 @@ export function closeTaskModal() {
     // Revert timer changes if closing without saving
     if (task && hasTimerChanges) {
       task.timer = state.originalTimerValue;
+    }
+
+    // Revert tag changes if closing without saving
+    if (task && hasTagChanges) {
+      task.tags = [...state.originalTagsValue];
+    }
+
+    // Update display and save reverted state
+    if (task && (hasTimerChanges || hasTagChanges)) {
       updateNoteCardDisplay(state.currentTaskId);
       saveNotesToLocalStorage();
     }
@@ -474,6 +505,8 @@ export function closeTaskModal() {
   state.setOriginalTimerValue(0);
   state.setOriginalPriorityValue(null);
   state.setCurrentModalPriority(null);
+  state.setOriginalTagsValue([]);
+  state.setOriginalTitleValue('');
 }
 
 export function clearNotes() {
@@ -500,6 +533,14 @@ export async function saveAndCloseModal() {
 
   const task = state.notesData.find(t => t.id === state.currentTaskId);
   if (!task) return;
+
+  // Reconstruct the TRUE previous state from original values saved when modal opened
+  // (tags and timer are modified in memory during modal interaction)
+  const previousTaskState = deepClone(task);
+  previousTaskState.title = state.originalTitleValue || task.title;
+  previousTaskState.priority = state.originalPriorityValue;
+  previousTaskState.tags = state.originalTagsValue ? [...state.originalTagsValue] : [];
+  previousTaskState.timer = state.originalTimerValue || 0;
 
   const notesEditor = document.getElementById('modalNotesEditor');
   const titleEl = document.getElementById('modalTitle');
@@ -537,6 +578,39 @@ export async function saveAndCloseModal() {
     updateNoteCardPriority(state.currentTaskId);
     // Re-sort the column after priority change
     sortColumnByPriority(task.column);
+  }
+
+  // Save tag changes if different
+  const currentTags = task.tags || [];
+  const originalTags = state.originalTagsValue || [];
+  const addedTags = currentTags.filter(t => !originalTags.includes(t));
+  const removedTags = originalTags.filter(t => !currentTags.includes(t));
+
+  if (addedTags.length > 0 || removedTags.length > 0) {
+    const timestamp = new Date().toLocaleString();
+
+    // Log added tags
+    addedTags.forEach(tagId => {
+      const tag = getTagById(tagId);
+      task.actions.push({
+        action: `Added tag "${tag ? tag.name : tagId}"`,
+        timestamp,
+        type: 'tag'
+      });
+    });
+
+    // Log removed tags
+    removedTags.forEach(tagId => {
+      const tag = getTagById(tagId);
+      task.actions.push({
+        action: `Removed tag "${tag ? tag.name : tagId}"`,
+        timestamp,
+        type: 'tag'
+      });
+    });
+
+    // Cleanup unused tag definitions
+    cleanupUnusedTags();
   }
 
   // Save all pending timer actions in a single summary entry
@@ -612,6 +686,32 @@ export async function saveAndCloseModal() {
       timestamp,
       notesHTML: notesEditor.innerHTML,
       images: imageIds
+    });
+  }
+
+  // Record action for undo/redo (only if there were actual changes)
+  const newTaskState = deepClone(task);
+  if (JSON.stringify(previousTaskState) !== JSON.stringify(newTaskState)) {
+    // Determine what changed for the description
+    let changeDescription = 'Update task';
+    if (previousTaskState.title !== newTaskState.title) {
+      changeDescription = `Rename "${previousTaskState.title.substring(0, 20)}..."`;
+    } else if (previousTaskState.priority !== newTaskState.priority) {
+      changeDescription = 'Change priority';
+    } else if (JSON.stringify(previousTaskState.tags) !== JSON.stringify(newTaskState.tags)) {
+      changeDescription = 'Update tags';
+    } else if (previousTaskState.timer !== newTaskState.timer) {
+      changeDescription = 'Update timer';
+    } else if (previousTaskState.noteEntries?.length !== newTaskState.noteEntries?.length) {
+      changeDescription = 'Add note';
+    }
+
+    recordAction({
+      type: 'update',
+      taskId: state.currentTaskId,
+      previousState: previousTaskState,
+      newState: newTaskState,
+      description: changeDescription
     });
   }
 
