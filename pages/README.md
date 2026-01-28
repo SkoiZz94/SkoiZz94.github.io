@@ -16,16 +16,23 @@ All pages share:
 A full-featured productivity hub with task management (kanban board), notebook system, timezone clocks, and comprehensive export/import capabilities.
 
 ### Structure
-- **Navigation**: Home button (top-left)
+- **Navigation**: Home button (top-left), Notebook toggle, Undo/Redo buttons, Trash toggle
 - **Clock Container**: Timezone clocks and chronometers
-- **Controls**: Task input field and Add button
+- **Controls**: Task input field, Add button, Search bar, Tag filter buttons
 - **Kanban Board**: Four columns (To Do, In Progress, On Hold, Done)
 - **Notebook Sidebar**: Collapsible sidebar with folders and pages for notes
+- **Trash Panel**: View and restore deleted tasks
 - **Notes Area**: Permanent and temporary text areas
 - **Export/Import**: HTML export and file import buttons
-- **Task Modal**: Detailed task view with notes, sub-tasks, priority, timer, history
+- **Task Modal**: Detailed task view with notes, sub-tasks, priority, timer, tags, due dates, history
 - **Image Modal**: Full-screen image viewer with zoom and pan
 - **Clock Modal**: Add timezone clocks or chronometers
+
+### Key Features
+- **Tag filtering**: 5 color-coded tag buttons (Urgent, Review, User Story, Incident, Rollout)
+- **Due dates**: Visual indicators for today (yellow) and overdue (red)
+- **Undo/Redo**: Full undo/redo for all actions (create, delete, edit, move, priority, timer, tags, due dates)
+- **Trash**: Recover deleted tasks (max 20 items)
 
 **Linked Assets**:
 - `taskhub-styles.css`

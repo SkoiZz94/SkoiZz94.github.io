@@ -4,7 +4,8 @@
  ***********************/
 import * as state from './state.js';
 import { saveNotesToLocalStorage } from './storage.js';
-import { escapeHtml } from './utils.js';
+import { escapeHtml, deepClone } from './utils.js';
+import { recordAction } from './undo.js';
 
 /**
  * Set due date for a task
@@ -16,29 +17,47 @@ export function setDueDate(taskId, dueDate) {
   if (!task) return false;
 
   const oldDate = task.dueDate;
+  if (oldDate === dueDate) return true; // No change
+
+  // Record for undo before modifying
+  const previousState = deepClone(task);
+
   task.dueDate = dueDate;
 
   // Add to history
   const timestamp = new Date().toLocaleString();
+  let actionDescription = 'Update due date';
   if (dueDate && !oldDate) {
     task.actions.push({
       action: `Due date set to ${formatDueDate(dueDate)}`,
       timestamp,
       type: 'dueDate'
     });
+    actionDescription = `Set due date to ${formatDueDate(dueDate)}`;
   } else if (!dueDate && oldDate) {
     task.actions.push({
       action: 'Due date removed',
       timestamp,
       type: 'dueDate'
     });
+    actionDescription = 'Remove due date';
   } else if (dueDate && oldDate && dueDate !== oldDate) {
     task.actions.push({
       action: `Due date changed from ${formatDueDate(oldDate)} to ${formatDueDate(dueDate)}`,
       timestamp,
       type: 'dueDate'
     });
+    actionDescription = `Change due date to ${formatDueDate(dueDate)}`;
   }
+
+  // Record action for undo/redo
+  recordAction({
+    type: 'dueDate',
+    taskId: taskId,
+    previousState: previousState,
+    newState: deepClone(task),
+    description: actionDescription
+  });
 
   saveNotesToLocalStorage();
   return true;
@@ -195,14 +214,11 @@ export function renderDueDatePicker(taskId, container) {
   const task = state.notesData.find(t => t.id === taskId);
   const currentDate = task?.dueDate || '';
 
-  // Get today's date in YYYY-MM-DD format for min attribute
-  const today = new Date().toISOString().split('T')[0];
-
   container.innerHTML = `
     <div class="due-date-picker">
       <label for="dueDateInput">Due Date:</label>
       <div class="due-date-input-wrapper">
-        <input type="date" id="dueDateInput" value="${currentDate}" min="${today}">
+        <input type="date" id="dueDateInput" value="${currentDate}">
         ${currentDate ? '<button id="clearDueDateBtn" class="clear-due-date" title="Clear due date">&times;</button>' : ''}
       </div>
       ${currentDate ? `<span class="due-date-preview ${getDueDateStatus(taskId)}">${formatRelativeDueDate(currentDate)}</span>` : ''}

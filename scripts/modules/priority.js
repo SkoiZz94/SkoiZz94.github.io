@@ -6,6 +6,8 @@ import { saveNotesToLocalStorage } from './storage.js';
 import { updateNoteCardDisplay } from './tasks.js';
 import { sortColumnByPriority } from './sorting.js';
 import { showContextMenu } from './context-menu.js';
+import { recordAction } from './undo.js';
+import { deepClone } from './utils.js';
 
 // Priority definitions (centralized)
 export const PRIORITIES = [
@@ -53,6 +55,9 @@ export function quickSetPriority(taskId, priority) {
   const oldPriority = task.priority;
   if (oldPriority === priority) return;
 
+  // Record for undo before modifying
+  const previousState = deepClone(task);
+
   task.priority = priority;
 
   const timestamp = new Date().toLocaleString();
@@ -60,6 +65,15 @@ export function quickSetPriority(taskId, priority) {
     action: `Priority changed from ${getPriorityLabel(oldPriority)} to ${getPriorityLabel(priority)}`,
     timestamp,
     type: 'priority'
+  });
+
+  // Record action for undo/redo
+  recordAction({
+    type: 'priority',
+    taskId: taskId,
+    previousState: previousState,
+    newState: deepClone(task),
+    description: `Change priority to ${getPriorityLabel(priority)}`
   });
 
   saveNotesToLocalStorage();

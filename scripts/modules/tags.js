@@ -36,6 +36,9 @@ export function initTags() {
   loadTagDefinitions();
 }
 
+// Default tag IDs (preserved even if unused)
+const DEFAULT_TAG_IDS = ['urgent', 'review', 'user-story', 'incident', 'rollout'];
+
 /**
  * Load tag definitions from localStorage
  */
@@ -44,20 +47,43 @@ function loadTagDefinitions() {
     const saved = localStorage.getItem(TAGS_STORAGE_KEY);
     if (saved) {
       tagDefinitions = JSON.parse(saved);
+      // Ensure all default tags exist
+      ensureDefaultTags();
     } else {
       // Create default tags
-      tagDefinitions = [
-        { id: 'bug', name: 'Bug', colorIndex: 0 },
-        { id: 'feature', name: 'Feature', colorIndex: 5 },
-        { id: 'urgent', name: 'Urgent', colorIndex: 0 },
-        { id: 'review', name: 'Review', colorIndex: 7 }
-      ];
+      tagDefinitions = getDefaultTags();
       saveTagDefinitions();
     }
   } catch (e) {
     console.warn('Error loading tags:', e);
-    tagDefinitions = [];
+    tagDefinitions = getDefaultTags();
   }
+}
+
+/**
+ * Get the default tags configuration
+ */
+function getDefaultTags() {
+  return [
+    { id: 'urgent', name: 'Urgent', colorIndex: 0 },       // Red
+    { id: 'review', name: 'Review', colorIndex: 7 },       // Purple
+    { id: 'user-story', name: 'User Story', colorIndex: 5 }, // Blue
+    { id: 'incident', name: 'Incident', colorIndex: 1 },   // Orange
+    { id: 'rollout', name: 'Rollout', colorIndex: 3 }      // Green
+  ];
+}
+
+/**
+ * Ensure all default tags exist in tagDefinitions
+ */
+function ensureDefaultTags() {
+  const defaults = getDefaultTags();
+  defaults.forEach(defaultTag => {
+    if (!tagDefinitions.find(t => t.id === defaultTag.id)) {
+      tagDefinitions.push(defaultTag);
+    }
+  });
+  saveTagDefinitions();
 }
 
 /**
@@ -153,7 +179,36 @@ export function deleteTag(id) {
 }
 
 /**
- * Add tag to a task
+ * Clean up unused tag definitions
+ * Removes tags that are not used by any task (except defaults)
+ */
+export function cleanupUnusedTags() {
+  // Get all tag IDs currently in use
+  const usedTagIds = new Set();
+  state.notesData.forEach(task => {
+    if (task.tags && task.tags.length > 0) {
+      task.tags.forEach(tagId => usedTagIds.add(tagId));
+    }
+  });
+
+  // Filter out unused tags (keep default tags)
+  const previousCount = tagDefinitions.length;
+
+  tagDefinitions = tagDefinitions.filter(tag =>
+    usedTagIds.has(tag.id) || DEFAULT_TAG_IDS.includes(tag.id)
+  );
+
+  // Ensure default tags exist after cleanup
+  ensureDefaultTags();
+
+  // Save if any tags were removed
+  if (tagDefinitions.length !== previousCount) {
+    saveTagDefinitions();
+  }
+}
+
+/**
+ * Add tag to a task (does NOT save immediately - save happens in modal saveAndClose)
  */
 export function addTagToTask(taskId, tagId) {
   const task = state.notesData.find(t => t.id === taskId);
@@ -170,24 +225,14 @@ export function addTagToTask(taskId, tagId) {
 
   if (!task.tags.includes(tagId)) {
     task.tags.push(tagId);
-
-    // Add to history
-    const tag = getTagById(tagId);
-    const timestamp = new Date().toLocaleString();
-    task.actions.push({
-      action: `Added tag "${tag ? tag.name : tagId}"`,
-      timestamp,
-      type: 'tag'
-    });
-
-    saveNotesToLocalStorage();
+    // Note: History entry and save will happen in saveAndCloseModal()
   }
 
   return true;
 }
 
 /**
- * Remove tag from a task
+ * Remove tag from a task (does NOT save immediately - save happens in modal saveAndClose)
  */
 export function removeTagFromTask(taskId, tagId) {
   const task = state.notesData.find(t => t.id === taskId);
@@ -196,17 +241,7 @@ export function removeTagFromTask(taskId, tagId) {
   const index = task.tags.indexOf(tagId);
   if (index !== -1) {
     task.tags.splice(index, 1);
-
-    // Add to history
-    const tag = getTagById(tagId);
-    const timestamp = new Date().toLocaleString();
-    task.actions.push({
-      action: `Removed tag "${tag ? tag.name : tagId}"`,
-      timestamp,
-      type: 'tag'
-    });
-
-    saveNotesToLocalStorage();
+    // Note: History entry and save will happen in saveAndCloseModal()
   }
 
   return true;

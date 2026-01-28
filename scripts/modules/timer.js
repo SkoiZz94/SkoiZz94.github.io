@@ -2,10 +2,11 @@
  * TIMER FUNCTIONS
  ***********************/
 import * as state from './state.js';
-import { formatTime } from './utils.js';
+import { formatTime, deepClone } from './utils.js';
 import { saveNotesToLocalStorage } from './storage.js';
 import { updateNoteCardDisplay } from './tasks.js';
 import { showContextMenu, closeActiveMenu } from './context-menu.js';
+import { recordAction } from './undo.js';
 
 // Long-press threshold reduced for better mobile UX
 export const LONG_PRESS_THRESHOLD = 300;
@@ -57,13 +58,25 @@ export function quickAddTime(taskId, minutes) {
   const task = state.notesData.find(t => t.id === taskId);
   if (!task) return;
 
+  // Record for undo before modifying
+  const previousState = deepClone(task);
+
   task.timer = Math.max(0, (task.timer || 0) + minutes);
 
   const timestamp = new Date().toLocaleString();
-  const action = minutes > 0
+  const actionText = minutes > 0
     ? `Added ${minutes} minute(s) to timer`
     : `Removed ${Math.abs(minutes)} minute(s) from timer`;
-  task.actions.push({ action, timestamp, type: 'timer' });
+  task.actions.push({ action: actionText, timestamp, type: 'timer' });
+
+  // Record action for undo/redo
+  recordAction({
+    type: 'timer',
+    taskId: taskId,
+    previousState: previousState,
+    newState: deepClone(task),
+    description: actionText
+  });
 
   saveNotesToLocalStorage();
   updateNoteCardDisplay(taskId);

@@ -129,6 +129,12 @@ function applyUndo(action) {
     case 'delete':
       // Restore deleted task
       if (action.previousState) {
+        // First, remove any existing task with this ID (the deleted version)
+        const existingIndex = state.notesData.findIndex(t => t.id === action.taskId);
+        if (existingIndex !== -1) {
+          state.notesData.splice(existingIndex, 1);
+        }
+        // Add the restored task
         state.notesData.push(action.previousState);
         saveNotesToLocalStorage();
         // Trigger UI refresh
@@ -154,13 +160,22 @@ function applyUndo(action) {
     case 'update':
     case 'priority':
     case 'timer':
+    case 'tags':
+    case 'dueDate':
+    case 'notes':
+    case 'title':
       // Restore previous state
       const task = state.notesData.find(t => t.id === action.taskId);
       if (task && action.previousState) {
-        Object.assign(task, action.previousState);
+        const oldColumn = task.column;
+        // Deep copy the previous state to avoid reference issues
+        const prevState = JSON.parse(JSON.stringify(action.previousState));
+        Object.keys(prevState).forEach(key => {
+          task[key] = prevState[key];
+        });
         saveNotesToLocalStorage();
         window.dispatchEvent(new CustomEvent('taskhub:taskUpdated', {
-          detail: { taskId: action.taskId }
+          detail: { taskId: action.taskId, oldColumn: oldColumn }
         }));
       }
       break;
@@ -173,10 +188,10 @@ function applyUndo(action) {
 function applyRedo(action) {
   switch (action.type) {
     case 'delete':
-      // Delete the task again
-      const deleteIndex = state.notesData.findIndex(t => t.id === action.taskId);
-      if (deleteIndex !== -1) {
-        state.notesData.splice(deleteIndex, 1);
+      // Delete the task again - mark as deleted
+      const taskToDelete = state.notesData.find(t => t.id === action.taskId);
+      if (taskToDelete) {
+        taskToDelete.deleted = true;
         saveNotesToLocalStorage();
         window.dispatchEvent(new CustomEvent('taskhub:taskRemoved', {
           detail: { taskId: action.taskId }
@@ -187,6 +202,11 @@ function applyRedo(action) {
     case 'create':
       // Recreate the task
       if (action.newState) {
+        // Remove any existing deleted version first
+        const existingIndex = state.notesData.findIndex(t => t.id === action.taskId);
+        if (existingIndex !== -1) {
+          state.notesData.splice(existingIndex, 1);
+        }
         state.notesData.push(action.newState);
         saveNotesToLocalStorage();
         window.dispatchEvent(new CustomEvent('taskhub:taskRestored', {
@@ -199,13 +219,22 @@ function applyRedo(action) {
     case 'update':
     case 'priority':
     case 'timer':
+    case 'tags':
+    case 'dueDate':
+    case 'notes':
+    case 'title':
       // Apply new state
-      const task = state.notesData.find(t => t.id === action.taskId);
-      if (task && action.newState) {
-        Object.assign(task, action.newState);
+      const redoTask = state.notesData.find(t => t.id === action.taskId);
+      if (redoTask && action.newState) {
+        const oldColumn = redoTask.column;
+        // Deep copy the new state to avoid reference issues
+        const newState = JSON.parse(JSON.stringify(action.newState));
+        Object.keys(newState).forEach(key => {
+          redoTask[key] = newState[key];
+        });
         saveNotesToLocalStorage();
         window.dispatchEvent(new CustomEvent('taskhub:taskUpdated', {
-          detail: { taskId: action.taskId }
+          detail: { taskId: action.taskId, oldColumn: oldColumn }
         }));
       }
       break;

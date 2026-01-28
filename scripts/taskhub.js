@@ -60,7 +60,7 @@ import {
   exportBoardAsHTML,
   importBoardFromFile
 } from './modules/export.js';
-import { sortAllColumnsByPriority } from './modules/sorting.js';
+import { sortAllColumnsByPriority, sortColumnByPriority } from './modules/sorting.js';
 import {
   toggleNotebookSidebar,
   renderNotebookTree,
@@ -81,7 +81,7 @@ import {
 // New feature imports
 import { showNotification, showSuccess, showError, warnIfStorageHigh } from './modules/notifications.js';
 import { initSearch, setSearchTerm, setColumnFilter, clearFilters, applyFilters } from './modules/search.js';
-import { initTags, renderTagSelector, renderTaskTagsHTML } from './modules/tags.js';
+import { initTags, renderTagSelector, renderTaskTagsHTML, cleanupUnusedTags } from './modules/tags.js';
 import { renderDueDatePicker, renderDueDateHTML } from './modules/due-dates.js';
 import { initUndo, undo, redo, getTrashedTasks, restoreFromTrash, permanentlyDelete, emptyTrash, getTrashCount, moveToTrash } from './modules/undo.js';
 import { showLoading, hideLoading } from './modules/loading.js';
@@ -340,6 +340,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // Clean up any orphan tags (tags not used by any task)
+  cleanupUnusedTags();
+
   // Sort all columns by priority after loading
   sortAllColumnsByPriority();
 
@@ -433,8 +436,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   window.addEventListener('taskhub:taskUpdated', (e) => {
+    const task = state.notesData.find(t => t.id === e.detail.taskId);
+    if (!task) return;
+
+    // If column changed (e.g., from undo of a move), relocate the card
+    if (e.detail.oldColumn && e.detail.oldColumn !== task.column) {
+      const noteElement = document.querySelector(`[data-id="${e.detail.taskId}"]`);
+      if (noteElement) {
+        const newCol = document.getElementById(task.column);
+        if (newCol) {
+          newCol.appendChild(noteElement);
+        }
+      }
+      sortColumnByPriority(task.column);
+      sortColumnByPriority(e.detail.oldColumn);
+    }
+
     updateNoteCardDisplay(e.detail.taskId);
+    sortColumnByPriority(task.column);
     applyFilters();
+    updateColumnCounts();
   });
 
   // iOS Safari touch support for elements with onclick attributes

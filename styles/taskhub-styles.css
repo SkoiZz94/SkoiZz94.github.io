@@ -2519,33 +2519,102 @@ body.notebook-sidebar-open.sidebar-resizing .notebook-toggle {
     background: none;
 }
 
-.column-filters {
+.tag-filters {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
 }
 
-.column-filter-btn {
-    padding: 5px 10px;
-    font-size: 0.75em;
+.tag-filter-btn {
+    padding: 8px 12px;
+    font-size: 0.85em;
     border-radius: 16px;
     background: rgba(40, 40, 40, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: rgba(255, 255, 255, 0.6);
     margin: 0;
     transition: all 0.2s ease;
     white-space: nowrap;
 }
 
-.column-filter-btn:hover {
+.tag-filter-btn:hover {
     background: rgba(50, 50, 50, 0.8);
     color: rgba(255, 255, 255, 0.9);
 }
 
-.column-filter-btn.active {
-    background: rgba(59, 130, 246, 0.3);
+/* Tag filter colors - Urgent (Red) */
+.tag-filter-btn[data-tag="urgent"] {
+    border-color: rgba(239, 68, 68, 0.3);
+}
+.tag-filter-btn[data-tag="urgent"]:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #ef4444;
+}
+.tag-filter-btn[data-tag="urgent"].active {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+/* Tag filter colors - Review (Purple) */
+.tag-filter-btn[data-tag="review"] {
+    border-color: rgba(168, 85, 247, 0.3);
+}
+.tag-filter-btn[data-tag="review"]:hover {
+    background: rgba(168, 85, 247, 0.15);
+    border-color: rgba(168, 85, 247, 0.5);
+    color: #a855f7;
+}
+.tag-filter-btn[data-tag="review"].active {
+    background: rgba(168, 85, 247, 0.25);
+    border-color: #a855f7;
+    color: #a855f7;
+}
+
+/* Tag filter colors - User Story (Blue) */
+.tag-filter-btn[data-tag="user-story"] {
+    border-color: rgba(59, 130, 246, 0.3);
+}
+.tag-filter-btn[data-tag="user-story"]:hover {
+    background: rgba(59, 130, 246, 0.15);
     border-color: rgba(59, 130, 246, 0.5);
-    color: #ffffff;
+    color: #3b82f6;
+}
+.tag-filter-btn[data-tag="user-story"].active {
+    background: rgba(59, 130, 246, 0.25);
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+/* Tag filter colors - Incident (Orange) */
+.tag-filter-btn[data-tag="incident"] {
+    border-color: rgba(249, 115, 22, 0.3);
+}
+.tag-filter-btn[data-tag="incident"]:hover {
+    background: rgba(249, 115, 22, 0.15);
+    border-color: rgba(249, 115, 22, 0.5);
+    color: #f97316;
+}
+.tag-filter-btn[data-tag="incident"].active {
+    background: rgba(249, 115, 22, 0.25);
+    border-color: #f97316;
+    color: #f97316;
+}
+
+/* Tag filter colors - Rollout (Green) */
+.tag-filter-btn[data-tag="rollout"] {
+    border-color: rgba(34, 197, 94, 0.3);
+}
+.tag-filter-btn[data-tag="rollout"]:hover {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.5);
+    color: #22c55e;
+}
+.tag-filter-btn[data-tag="rollout"].active {
+    background: rgba(34, 197, 94, 0.25);
+    border-color: #22c55e;
+    color: #22c55e;
 }
 
 /* ===== Notifications ===== */
@@ -3040,6 +3109,16 @@ body.notebook-sidebar-open.sidebar-resizing .notebook-toggle {
 }
 
 /* Task card overdue state */
+.note.task-due-today {
+    border-color: rgba(234, 179, 8, 0.4);
+    box-shadow: 0 2px 8px rgba(234, 179, 8, 0.2);
+}
+
+.note.task-due-today:hover {
+    border-color: rgba(234, 179, 8, 0.6);
+    box-shadow: 0 8px 24px rgba(234, 179, 8, 0.3);
+}
+
 .note.task-overdue {
     border-color: rgba(239, 68, 68, 0.4);
     box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
@@ -3304,7 +3383,7 @@ body.notebook-sidebar-open.sidebar-resizing .notebook-toggle {
         max-width: none;
     }
 
-    .column-filters {
+    .tag-filters {
         justify-content: center;
     }
 }
@@ -3336,14 +3415,14 @@ body.notebook-sidebar-open.sidebar-resizing .notebook-toggle {
         max-width: none;
     }
 
-    .column-filters {
+    .tag-filters {
         overflow-x: auto;
         flex-wrap: nowrap;
         padding-bottom: 8px;
         -webkit-overflow-scrolling: touch;
     }
 
-    .column-filter-btn {
+    .tag-filter-btn {
         flex-shrink: 0;
     }
 

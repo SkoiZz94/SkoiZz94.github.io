@@ -13,6 +13,7 @@ export let originalPriorityValue = null;
 export let currentModalPriority = null;
 export let originalTitleValue = '';
 export let editingNoteEntryIndex = null;
+export let originalTagsValue = [];
 
 // Database
 export let db = null;
@@ -52,6 +53,7 @@ export function setOriginalPriorityValue(value) { originalPriorityValue = value;
 export function setCurrentModalPriority(value) { currentModalPriority = value; }
 export function setOriginalTitleValue(value) { originalTitleValue = value; }
 export function setEditingNoteEntryIndex(value) { editingNoteEntryIndex = value; }
+export function setOriginalTagsValue(value) { originalTagsValue = value; }
 export function setDb(database) { db = database; }
 export function setClocksData(data) { clocksData = data; }
 export function setDraggedClock(clock) { draggedClock = clock; }

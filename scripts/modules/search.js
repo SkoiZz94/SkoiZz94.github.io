@@ -1,9 +1,10 @@
 /***********************
  * SEARCH & FILTERING
- * Task search and column filtering
+ * Task search and tag filtering
  ***********************/
 import * as state from './state.js';
 import { getTextPreview } from './utils.js';
+import { getTagById } from './tags.js';
 
 // Current filter state
 let currentSearchTerm = '';
@@ -35,12 +36,12 @@ export function initSearch() {
     });
   }
 
-  // Initialize column filter buttons
-  const filterButtons = document.querySelectorAll('.column-filter-btn');
-  filterButtons.forEach(btn => {
+  // Initialize tag filter buttons
+  const tagFilterButtons = document.querySelectorAll('.tag-filter-btn');
+  tagFilterButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      const column = btn.dataset.column || null;
-      setColumnFilter(column);
+      const tag = btn.dataset.tag;
+      toggleTagFilter(tag);
     });
   });
 }
@@ -78,7 +79,39 @@ export function setColumnFilter(column) {
  */
 export function setTagFilter(tags) {
   currentTagFilter = Array.isArray(tags) ? tags : [tags];
+  updateTagFilterButtons();
   applyFilters();
+}
+
+/**
+ * Toggle a tag in the filter (add if not present, remove if present)
+ */
+export function toggleTagFilter(tag) {
+  const index = currentTagFilter.indexOf(tag);
+  if (index === -1) {
+    // Add tag to filter
+    currentTagFilter.push(tag);
+  } else {
+    // Remove tag from filter
+    currentTagFilter.splice(index, 1);
+  }
+  updateTagFilterButtons();
+  applyFilters();
+}
+
+/**
+ * Update tag filter button visual states
+ */
+function updateTagFilterButtons() {
+  const tagFilterButtons = document.querySelectorAll('.tag-filter-btn');
+  tagFilterButtons.forEach(btn => {
+    const tag = btn.dataset.tag;
+    if (currentTagFilter.includes(tag)) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
 }
 
 /**
@@ -92,13 +125,10 @@ export function clearFilters() {
   const searchInput = document.getElementById('taskSearchInput');
   if (searchInput) searchInput.value = '';
 
-  const filterButtons = document.querySelectorAll('.column-filter-btn');
-  filterButtons.forEach(btn => {
-    if (btn.dataset.column === null || btn.dataset.column === '') {
-      btn.classList.add('active');
-    } else {
-      btn.classList.remove('active');
-    }
+  // Clear tag filter buttons
+  const tagFilterButtons = document.querySelectorAll('.tag-filter-btn');
+  tagFilterButtons.forEach(btn => {
+    btn.classList.remove('active');
   });
 
   applyFilters();
@@ -108,11 +138,24 @@ export function clearFilters() {
  * Apply all active filters to task display
  */
 export function applyFilters() {
-  const tasks = state.notesData;
+  // Get all note elements from the DOM
+  const allNoteElements = document.querySelectorAll('.note');
 
-  tasks.forEach(task => {
-    const noteElement = document.querySelector(`[data-id="${task.id}"]`);
-    if (!noteElement) return;
+  allNoteElements.forEach(noteElement => {
+    const taskId = noteElement.dataset.id;
+    // Try both string and number versions of the ID
+    let task = state.notesData.find(t => t.id === taskId);
+    if (!task) {
+      task = state.notesData.find(t => String(t.id) === String(taskId));
+    }
+    if (!task) {
+      task = state.notesData.find(t => t.id === parseInt(taskId));
+    }
+
+    if (!task || task.deleted) {
+      noteElement.style.display = 'none';
+      return;
+    }
 
     const isVisible = checkTaskVisibility(task);
     noteElement.style.display = isVisible ? '' : 'none';
@@ -126,15 +169,37 @@ export function applyFilters() {
  * Check if a task should be visible based on current filters
  */
 function checkTaskVisibility(task) {
+  // Don't show deleted tasks
+  if (task.deleted) {
+    return false;
+  }
+
   // Check column filter
   if (currentColumnFilter && task.column !== currentColumnFilter) {
     return false;
   }
 
-  // Check tag filter
+  // Check tag filter - match by tag name (case-insensitive)
   if (currentTagFilter.length > 0) {
-    const taskTags = task.tags || [];
-    const hasMatchingTag = currentTagFilter.some(tag => taskTags.includes(tag));
+    const taskTagIds = task.tags || [];
+
+    // Get the names of all tags on this task
+    const taskTagNames = taskTagIds.map(tagId => {
+      const tagDef = getTagById(tagId);
+      return tagDef ? tagDef.name.toLowerCase() : tagId.toLowerCase();
+    });
+
+    // Get the names of filter tags
+    const filterTagNames = currentTagFilter.map(tagId => {
+      const tagDef = getTagById(tagId);
+      return tagDef ? tagDef.name.toLowerCase() : tagId.toLowerCase();
+    });
+
+    // Check if any task tag name matches any filter tag name
+    const hasMatchingTag = filterTagNames.some(filterName =>
+      taskTagNames.includes(filterName)
+    );
+
     if (!hasMatchingTag) {
       return false;
     }

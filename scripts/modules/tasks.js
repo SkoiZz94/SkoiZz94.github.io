@@ -145,6 +145,9 @@ export function updateNoteColumn(id, oldColumn, newColumn) {
   const note = state.notesData.find(n => n.id === id);
 
   if (note && oldColumn !== newColumn) {
+    // Record for undo before modifying
+    const previousState = deepClone(note);
+
     note.column = newColumn;
     const timestamp = new Date().toLocaleString();
 
@@ -158,6 +161,16 @@ export function updateNoteColumn(id, oldColumn, newColumn) {
       timestamp,
       type: 'status'
     });
+
+    // Record action for undo/redo
+    recordAction({
+      type: 'move',
+      taskId: id,
+      previousState: previousState,
+      newState: deepClone(note),
+      description: `Move "${note.title.substring(0, 20)}..." to ${getColumnName(newColumn)}`
+    });
+
     saveNotesToLocalStorage();
 
     if (newColumn === 'done') {
@@ -363,10 +376,12 @@ export function createNoteElement(content) {
     dueDateContainer.innerHTML = dueDateHtml;
     note.appendChild(dueDateContainer.firstChild);
 
-    // Add overdue class to card if needed
+    // Add due date status class to card if needed
     const status = getDueDateStatus(content.id);
     if (status === 'overdue') {
       note.classList.add('task-overdue');
+    } else if (status === 'today') {
+      note.classList.add('task-due-today');
     }
   }
 
@@ -438,18 +453,36 @@ export function updateNoteCardDisplay(taskId) {
     workedTime.textContent = `Worked Time: ${formatTime(task.timer || 0)}`;
   }
 
+  // Update priority display
+  noteElement.classList.remove('priority-low', 'priority-medium', 'priority-high');
+  if (task.priority) {
+    noteElement.classList.add(`priority-${task.priority}`);
+  }
+
+  const priorityDisplay = noteElement.querySelector('.priority-display');
+  if (priorityDisplay) {
+    const priorityLabels = { low: 'Low', medium: 'Medium', high: 'High' };
+    priorityDisplay.textContent = `Priority: ${priorityLabels[task.priority] || 'None'}`;
+  }
+
   // Update tags display
   let tagsDisplay = noteElement.querySelector('.task-tags');
   const tagsHtml = renderTaskTagsHTML(taskId);
   if (tagsHtml) {
     if (!tagsDisplay) {
+      // No existing tags - insert after noteText
       const container = document.createElement('div');
       container.innerHTML = tagsHtml;
       const noteText = noteElement.querySelector('.note-text');
-      if (noteText && noteText.nextSibling) {
-        noteElement.insertBefore(container.firstChild, noteText.nextSibling);
+      if (noteText) {
+        if (noteText.nextSibling) {
+          noteElement.insertBefore(container.firstChild, noteText.nextSibling);
+        } else {
+          noteElement.appendChild(container.firstChild);
+        }
       }
     } else {
+      // Replace existing tags
       const container = document.createElement('div');
       container.innerHTML = tagsHtml;
       tagsDisplay.replaceWith(container.firstChild);
@@ -478,12 +511,14 @@ export function updateNoteCardDisplay(taskId) {
       dueDateDisplay.replaceWith(container.firstChild);
     }
 
-    // Update overdue class
+    // Update due date status classes
     const status = getDueDateStatus(taskId);
     noteElement.classList.toggle('task-overdue', status === 'overdue');
+    noteElement.classList.toggle('task-due-today', status === 'today');
   } else if (dueDateDisplay) {
     dueDateDisplay.remove();
     noteElement.classList.remove('task-overdue');
+    noteElement.classList.remove('task-due-today');
   }
 
   // Update sub-task indicator

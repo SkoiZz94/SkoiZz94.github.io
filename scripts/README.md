@@ -47,7 +47,7 @@ scripts/
 ├── taskhub.js          # Main entry point, imports and initializes all modules
 └── modules/
     ├── state.js        # Shared state management
-    ├── storage.js      # LocalStorage operations
+    ├── storage.js      # LocalStorage operations with auto-save
     ├── database.js     # IndexedDB for images
     ├── tasks.js        # Task CRUD operations
     ├── modal.js        # Task detail modal
@@ -62,7 +62,14 @@ scripts/
     ├── notebook.js     # Notebook sidebar system
     ├── notebook-export.js # Notebook PDF/ZIP export
     ├── export.js       # Task PDF/HTML export
-    └── utils.js        # Shared utilities
+    ├── utils.js        # Shared utilities (debounce, throttle, escapeHtml)
+    ├── tags.js         # Task tagging system (max 5 per task)
+    ├── due-dates.js    # Due date management with overdue detection
+    ├── search.js       # Task search and tag filtering
+    ├── undo.js         # Undo/redo and trash system
+    ├── notifications.js # Toast notification system
+    ├── context-menu.js # Shared context menu utility
+    └── loading.js      # Loading overlay and progress indicators
 ```
 
 ### Key Features
@@ -84,6 +91,29 @@ scripts/
   - Quick add/subtract time buttons (+1m to +60m)
   - Timer displayed on cards and in modal
   - Time changes logged in history
+- **Task tags**: Color-coded labels for categorization
+  - Default tags: Urgent (red), Review (purple), User Story (blue), Incident (orange), Rollout (green)
+  - Maximum 5 tags per task
+  - Custom tags can be created with 10 color options
+  - Unused tags automatically cleaned up
+- **Due dates**: Set deadlines with visual status indicators
+  - Yellow border for tasks due today
+  - Red border for overdue tasks
+  - Relative date display ("Today", "Tomorrow", "3 days ago")
+- **Search & filtering**: Find tasks quickly
+  - Real-time search across titles and notes
+  - Tag filter buttons for quick filtering by tag
+  - Multiple tags can be selected (OR logic)
+- **Undo/Redo**: Full undo/redo support with Ctrl+Z / Ctrl+Y
+  - Task creation and deletion
+  - Title changes
+  - Priority changes (quick menu and modal)
+  - Timer changes (quick menu and modal)
+  - Tag additions and removals
+  - Due date changes
+  - Note additions
+  - Moving tasks between columns
+- **Trash**: Recover deleted tasks (max 20 items stored)
 - **History tracking**: All actions logged with timestamps and color-coded by type
 
 #### Notebook System
