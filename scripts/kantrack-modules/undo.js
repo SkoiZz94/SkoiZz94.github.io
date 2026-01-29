@@ -13,7 +13,7 @@ const MAX_HISTORY = 50;
 
 // Trash for deleted tasks
 let trashedTasks = [];
-const TRASH_STORAGE_KEY = 'taskhubTrash';
+const TRASH_STORAGE_KEY = 'kantrackTrash';
 const TRASH_MAX_ITEMS = 20;
 
 /**
@@ -138,7 +138,7 @@ function applyUndo(action) {
         state.notesData.push(action.previousState);
         saveNotesToLocalStorage();
         // Trigger UI refresh
-        window.dispatchEvent(new CustomEvent('taskhub:taskRestored', {
+        window.dispatchEvent(new CustomEvent('kantrack:taskRestored', {
           detail: { taskId: action.taskId }
         }));
       }
@@ -150,7 +150,7 @@ function applyUndo(action) {
       if (createIndex !== -1) {
         state.notesData.splice(createIndex, 1);
         saveNotesToLocalStorage();
-        window.dispatchEvent(new CustomEvent('taskhub:taskRemoved', {
+        window.dispatchEvent(new CustomEvent('kantrack:taskRemoved', {
           detail: { taskId: action.taskId }
         }));
       }
@@ -174,7 +174,7 @@ function applyUndo(action) {
           task[key] = prevState[key];
         });
         saveNotesToLocalStorage();
-        window.dispatchEvent(new CustomEvent('taskhub:taskUpdated', {
+        window.dispatchEvent(new CustomEvent('kantrack:taskUpdated', {
           detail: { taskId: action.taskId, oldColumn: oldColumn }
         }));
       }
@@ -193,7 +193,7 @@ function applyRedo(action) {
       if (taskToDelete) {
         taskToDelete.deleted = true;
         saveNotesToLocalStorage();
-        window.dispatchEvent(new CustomEvent('taskhub:taskRemoved', {
+        window.dispatchEvent(new CustomEvent('kantrack:taskRemoved', {
           detail: { taskId: action.taskId }
         }));
       }
@@ -209,7 +209,7 @@ function applyRedo(action) {
         }
         state.notesData.push(action.newState);
         saveNotesToLocalStorage();
-        window.dispatchEvent(new CustomEvent('taskhub:taskRestored', {
+        window.dispatchEvent(new CustomEvent('kantrack:taskRestored', {
           detail: { taskId: action.taskId }
         }));
       }
@@ -233,7 +233,7 @@ function applyRedo(action) {
           redoTask[key] = newState[key];
         });
         saveNotesToLocalStorage();
-        window.dispatchEvent(new CustomEvent('taskhub:taskUpdated', {
+        window.dispatchEvent(new CustomEvent('kantrack:taskUpdated', {
           detail: { taskId: action.taskId, oldColumn: oldColumn }
         }));
       }

@@ -10,13 +10,13 @@ All pages share:
 
 ---
 
-## 1. TaskHub (`taskhub.html`)
+## 1. KanTrack (`kantrack.html`)
 
 ### Purpose
 A full-featured productivity hub with task management (kanban board), notebook system, timezone clocks, and comprehensive export/import capabilities.
 
 ### Structure
-- **Navigation**: Home button (top-left), Notebook toggle, Undo/Redo buttons, Trash toggle
+- **Header**: Home button, Notebook toggle, KanTrack logo (center), Undo/Redo buttons, Trash toggle
 - **Clock Container**: Timezone clocks and chronometers
 - **Controls**: Task input field, Add button, Search bar, Tag filter buttons
 - **Kanban Board**: Four columns (To Do, In Progress, On Hold, Done)
@@ -29,15 +29,20 @@ A full-featured productivity hub with task management (kanban board), notebook s
 - **Clock Modal**: Add timezone clocks or chronometers
 
 ### Key Features
-- **Tag filtering**: 5 color-coded tag buttons (Urgent, Review, User Story, Incident, Rollout)
+- **Tag filtering**: Dynamic filter buttons based on pinned tags
+- **Pinned tags**: Pin custom tags for reuse across tasks
 - **Due dates**: Visual indicators for today (yellow) and overdue (red)
 - **Undo/Redo**: Full undo/redo for all actions (create, delete, edit, move, priority, timer, tags, due dates)
 - **Trash**: Recover deleted tasks (max 20 items)
+- **Data cleanup**: Automatic removal of duplicate/orphaned tasks on load
 
 **Linked Assets**:
-- `taskhub-styles.css`
-- `taskhub.js` (ES modules entry point)
-- `modules/` folder with modular JS files
+- `kantrack/base.css` - Core styles (variables, layout, board, cards)
+- `kantrack/components.css` - UI components (clocks, modals, sub-kanban)
+- `kantrack/features.css` - Feature styles (notebook, tags, search, trash)
+- `kantrack/responsive.css` - Media queries for responsive design
+- `kantrack.js` (ES modules entry point)
+- `kantrack-modules/` folder with modular JS files
 - jsPDF and JSZip (CDN)
 
 ---

@@ -258,16 +258,39 @@ function updateColumnCounts() {
     const column = document.getElementById(columnId);
     if (!column) return;
 
-    const visibleTasks = column.querySelectorAll('.note:not([style*="display: none"])');
-    const totalTasks = column.querySelectorAll('.note');
+    const header = column.querySelector('h2');
+    if (!header) return;
 
-    const countSpan = column.querySelector('.column-count');
-    if (countSpan) {
-      if (currentSearchTerm || currentColumnFilter || currentTagFilter.length > 0) {
-        countSpan.textContent = `(${visibleTasks.length}/${totalTasks.length})`;
-      } else {
-        countSpan.textContent = totalTasks.length > 0 ? `(${totalTasks.length})` : '';
-      }
+    // Create or get count span
+    let countSpan = header.querySelector('.column-count');
+    if (!countSpan) {
+      countSpan = document.createElement('span');
+      countSpan.className = 'column-count';
+      header.appendChild(countSpan);
+    }
+
+    // Get all note elements
+    const allNoteElements = Array.from(column.querySelectorAll('.note'));
+
+    // Count visible elements (check computed style, not just inline)
+    const visibleTasks = allNoteElements.filter(el => {
+      const style = window.getComputedStyle(el);
+      return style.display !== 'none' && style.visibility !== 'hidden';
+    }).length;
+
+    const totalTasks = allNoteElements.filter(el => {
+      // Only count elements that have a real task (not orphaned)
+      const taskId = el.dataset.id;
+      return state.notesData.some(t => String(t.id) === String(taskId) && !t.deleted);
+    }).length;
+
+    // Show visible/total when filters are active, otherwise just visible count
+    if (currentSearchTerm || currentColumnFilter || currentTagFilter.length > 0) {
+      countSpan.textContent = totalTasks > 0
+        ? `(${visibleTasks}/${totalTasks})`
+        : '';
+    } else {
+      countSpan.textContent = visibleTasks > 0 ? `(${visibleTasks})` : '';
     }
   });
 }

@@ -6,7 +6,7 @@ import { notesData, setNotesData, notebookItems, setNotebookItems } from './stat
 import { showError, showWarning, checkStorageQuota } from './notifications.js';
 import { debugWarn } from './utils.js';
 
-// Auto-save callback (set by taskhub.js)
+// Auto-save callback (set by kantrack.js)
 let onAutoSaveCallback = null;
 
 export function setAutoSaveCallback(callback) {
@@ -17,7 +17,7 @@ export function loadNotesFromLocalStorage() {
   try {
     const savedNotes = localStorage.getItem('kanbanNotes');
     if (savedNotes) {
-      const parsedNotes = JSON.parse(savedNotes);
+      let parsedNotes = JSON.parse(savedNotes);
 
       // Migrate old format (single notes field) to new format (noteEntries array)
       parsedNotes.forEach(note => {
@@ -38,6 +38,9 @@ export function loadNotesFromLocalStorage() {
         }
       });
 
+      // Cleanup: Remove duplicates, invalid entries, and orphaned tasks
+      parsedNotes = cleanupNotesData(parsedNotes);
+
       setNotesData(parsedNotes);
     }
   } catch (e) {
@@ -46,6 +49,43 @@ export function loadNotesFromLocalStorage() {
     setNotesData([]);
   }
   return notesData;
+}
+
+/**
+ * Clean up notes data by removing duplicates and invalid entries
+ */
+function cleanupNotesData(notes) {
+  const validColumns = ['todo', 'inProgress', 'onHold', 'done'];
+  const seenIds = new Set();
+  const beforeCount = notes.length;
+
+  const cleanedNotes = notes.filter(note => {
+    // Skip if no ID
+    if (!note.id) return false;
+
+    // Skip if already seen (duplicate)
+    if (seenIds.has(note.id)) return false;
+    seenIds.add(note.id);
+
+    // Skip if no title
+    if (!note.title || note.title.trim() === '') return false;
+
+    // Skip if invalid column
+    if (!note.column || !validColumns.includes(note.column)) return false;
+
+    // Skip if marked as deleted
+    if (note.deleted) return false;
+
+    return true;
+  });
+
+  // Save if any entries were removed
+  if (cleanedNotes.length !== beforeCount) {
+    debugWarn(`Cleaned up ${beforeCount - cleanedNotes.length} invalid/duplicate tasks`);
+    localStorage.setItem('kanbanNotes', JSON.stringify(cleanedNotes));
+  }
+
+  return cleanedNotes;
 }
 
 export function saveNotesToLocalStorage() {

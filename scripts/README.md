@@ -3,7 +3,7 @@
 This folder contains JavaScript files powering the interactive features of the project:
 
 1. **CyberArk Quiz Application** (`cyberark.js`)
-2. **TaskHub** (`taskhub.js` + `modules/`)
+2. **KanTrack** (`kantrack.js` + `kantrack-modules/`)
 3. **WIM Calculator** (`wincalc.js`)
 
 ---
@@ -34,20 +34,20 @@ An interactive quiz engine that loads questions from a JSON file, randomizes ord
 
 ---
 
-## 2. TaskHub (`taskhub.js` + `modules/`)
+## 2. KanTrack (`kantrack.js` + `kantrack-modules/`)
 
 ### Overview
 A full-featured **productivity hub** with task management (kanban board), notebook system, timezone clocks, and comprehensive export/import capabilities.
 
 ### Architecture
-TaskHub uses **ES Modules** for clean separation of concerns:
+KanTrack uses **ES Modules** for clean separation of concerns:
 
 ```
 scripts/
-├── taskhub.js          # Main entry point, imports and initializes all modules
-└── modules/
+├── kantrack.js          # Main entry point, imports and initializes all modules
+└── kantrack-modules/
     ├── state.js        # Shared state management
-    ├── storage.js      # LocalStorage operations with auto-save
+    ├── storage.js      # LocalStorage operations with auto-save and data cleanup
     ├── database.js     # IndexedDB for images
     ├── tasks.js        # Task CRUD operations
     ├── modal.js        # Task detail modal
@@ -63,13 +63,14 @@ scripts/
     ├── notebook-export.js # Notebook PDF/ZIP export
     ├── export.js       # Task PDF/HTML export
     ├── utils.js        # Shared utilities (debounce, throttle, escapeHtml)
-    ├── tags.js         # Task tagging system (max 5 per task)
+    ├── tags.js         # Task tagging system (pinned tags, max 5 per task)
     ├── due-dates.js    # Due date management with overdue detection
     ├── search.js       # Task search and tag filtering
     ├── undo.js         # Undo/redo and trash system
     ├── notifications.js # Toast notification system
     ├── context-menu.js # Shared context menu utility
-    └── loading.js      # Loading overlay and progress indicators
+    ├── loading.js      # Loading overlay and progress indicators
+    └── mentions.js     # Disabled module (no-op exports for compatibility)
 ```
 
 ### Key Features
@@ -92,10 +93,13 @@ scripts/
   - Timer displayed on cards and in modal
   - Time changes logged in history
 - **Task tags**: Color-coded labels for categorization
-  - Default tags: Urgent (red), Review (purple), User Story (blue), Incident (orange), Rollout (green)
+  - No default tags - create your own custom tags
+  - **Pinned tags**: Pin tags you want to reuse across tasks
+    - Pinned tags persist even when not in use
+    - Unpinned tags are automatically cleaned up when not assigned to any task
   - Maximum 5 tags per task
-  - Custom tags can be created with 10 color options
-  - Unused tags automatically cleaned up
+  - 10 color options available
+  - Dynamic tag filter buttons based on pinned tags
 - **Due dates**: Set deadlines with visual status indicators
   - Yellow border for tasks due today
   - Red border for overdue tasks
@@ -152,6 +156,10 @@ scripts/
 - Tasks stored in `localStorage`
 - Images stored in `IndexedDB`
 - Permanent and temporary notes areas
+- **Automatic data cleanup on load**:
+  - Removes duplicate tasks (same ID)
+  - Removes tasks with missing/invalid data (no title, invalid column)
+  - Removes orphaned entries
 
 ### Utilities
 - HTML escaping (`escapeHtml`)
@@ -210,7 +218,7 @@ Compares total hours against required thresholds:
 
 - Runs in any modern browser (no external libraries needed except jsPDF for PDF export)
 - Requires internet access for **holiday API** (WIM Calculator)
-- jsPDF and JSZip loaded via CDN in `taskhub.html`
+- jsPDF and JSZip loaded via CDN in `kantrack.html`
 
 ---
 
@@ -219,5 +227,5 @@ Compares total hours against required thresholds:
 1. Open the HTML page including the desired script
 2. Ensure elements with expected IDs exist in the HTML
 3. For the quiz: Place `questions.json` in `/data/`
-4. For TaskHub: Interact with tasks, clocks auto-update, data auto-saves
+4. For KanTrack: Interact with tasks, clocks auto-update, data auto-saves
 5. For WIM Calculator: Select a date, input attendance, view compliance

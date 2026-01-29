@@ -4,8 +4,8 @@
  ***********************/
 
 // Import all modules
-import * as state from './modules/state.js';
-import { initIndexedDB } from './modules/database.js';
+import * as state from './kantrack-modules/state.js';
+import { initIndexedDB } from './kantrack-modules/database.js';
 import {
   loadNotesFromLocalStorage,
   saveNotesToLocalStorage,
@@ -13,7 +13,7 @@ import {
   loadPermanentNotes,
   savePermanentNotes,
   setAutoSaveCallback
-} from './modules/storage.js';
+} from './kantrack-modules/storage.js';
 import {
   loadClocks,
   openAddClockModal,
@@ -26,7 +26,7 @@ import {
   startChronometer,
   pauseChronometer,
   resetChronometer
-} from './modules/clocks.js';
+} from './kantrack-modules/clocks.js';
 import {
   openTaskModal,
   closeTaskModal,
@@ -34,33 +34,33 @@ import {
   clearNotes,
   toggleHistory,
   saveAndCloseModal
-} from './modules/modal.js';
+} from './kantrack-modules/modal.js';
 import {
   addNote,
   deleteTaskFromModal,
   createNoteElement,
   updateNoteCardDisplay
-} from './modules/tasks.js';
-import { setupDragAndDrop } from './modules/drag-drop.js';
+} from './kantrack-modules/tasks.js';
+import { setupDragAndDrop } from './kantrack-modules/drag-drop.js';
 import {
   addSubKanbanItem,
   toggleSubKanban
-} from './modules/sub-kanban.js';
-import { addTime } from './modules/timer.js';
-import { setModalPriority } from './modules/priority.js';
+} from './kantrack-modules/sub-kanban.js';
+import { addTime } from './kantrack-modules/timer.js';
+import { setModalPriority } from './kantrack-modules/priority.js';
 import {
   setupClipboardPaste,
   openImageViewer,
   closeImageModal,
   zoomImage,
   resetZoom
-} from './modules/images.js';
+} from './kantrack-modules/images.js';
 import {
   exportTaskAsPDF,
   exportBoardAsHTML,
   importBoardFromFile
-} from './modules/export.js';
-import { sortAllColumnsByPriority, sortColumnByPriority } from './modules/sorting.js';
+} from './kantrack-modules/export.js';
+import { sortAllColumnsByPriority, sortColumnByPriority } from './kantrack-modules/sorting.js';
 import {
   toggleNotebookSidebar,
   renderNotebookTree,
@@ -72,20 +72,20 @@ import {
   filterNotebookItems,
   setupNotebookEventListeners,
   importNotebookFromZip
-} from './modules/notebook.js';
+} from './kantrack-modules/notebook.js';
 import {
   exportPageAsPDF,
   exportAllNotebook
-} from './modules/notebook-export.js';
+} from './kantrack-modules/notebook-export.js';
 
 // New feature imports
-import { showNotification, showSuccess, showError, warnIfStorageHigh } from './modules/notifications.js';
-import { initSearch, setSearchTerm, setColumnFilter, clearFilters, applyFilters } from './modules/search.js';
-import { initTags, renderTagSelector, renderTaskTagsHTML, cleanupUnusedTags } from './modules/tags.js';
-import { renderDueDatePicker, renderDueDateHTML } from './modules/due-dates.js';
-import { initUndo, undo, redo, getTrashedTasks, restoreFromTrash, permanentlyDelete, emptyTrash, getTrashCount, moveToTrash } from './modules/undo.js';
-import { showLoading, hideLoading } from './modules/loading.js';
-import { debounce } from './modules/utils.js';
+import { showNotification, showSuccess, showError, warnIfStorageHigh } from './kantrack-modules/notifications.js';
+import { initSearch, setSearchTerm, setColumnFilter, clearFilters, applyFilters } from './kantrack-modules/search.js';
+import { initTags, renderTagSelector, renderTaskTagsHTML, cleanupUnusedTags, renderTagFilterButtons } from './kantrack-modules/tags.js';
+import { renderDueDatePicker, renderDueDateHTML } from './kantrack-modules/due-dates.js';
+import { initUndo, undo, redo, getTrashedTasks, restoreFromTrash, permanentlyDelete, emptyTrash, getTrashCount, moveToTrash } from './kantrack-modules/undo.js';
+import { showLoading, hideLoading } from './kantrack-modules/loading.js';
+import { debounce } from './kantrack-modules/utils.js';
 
 /***********************
  * EXPOSE FUNCTIONS TO GLOBAL SCOPE
@@ -175,8 +175,7 @@ function toggleTrashPanel() {
   }
 }
 
-function renderTrashList() {
-  const list = document.getElementById('trashList');
+function updateTrashCount() {
   const trashed = getTrashedTasks();
   const countBadge = document.getElementById('trashCount');
 
@@ -184,6 +183,17 @@ function renderTrashList() {
     countBadge.textContent = trashed.length;
     countBadge.style.display = trashed.length > 0 ? 'flex' : 'none';
   }
+}
+
+// Expose globally so it can be called from other modules
+window.updateTrashCount = updateTrashCount;
+
+function renderTrashList() {
+  const list = document.getElementById('trashList');
+  const trashed = getTrashedTasks();
+
+  // Update the count badge
+  updateTrashCount();
 
   if (trashed.length === 0) {
     list.innerHTML = '<div class="trash-empty-message">Trash is empty</div>';
@@ -295,7 +305,13 @@ function updateColumnCounts() {
       header.appendChild(countSpan);
     }
 
-    const taskCount = column.querySelectorAll('.note').length;
+    // Count visible elements using computed style
+    const allNoteElements = Array.from(column.querySelectorAll('.note'));
+    const taskCount = allNoteElements.filter(el => {
+      const style = window.getComputedStyle(el);
+      return style.display !== 'none' && style.visibility !== 'hidden';
+    }).length;
+
     countSpan.textContent = taskCount > 0 ? `(${taskCount})` : '';
   });
 }
@@ -324,6 +340,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Initialize new feature modules
   initTags();
+  renderTagFilterButtons();
   initUndo();
   initSearch();
 
@@ -346,11 +363,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Sort all columns by priority after loading
   sortAllColumnsByPriority();
 
-  // Apply any active filters
+  // Apply any active filters (this also updates column counts)
   applyFilters();
-
-  // Update column counts
-  updateColumnCounts();
 
   // Check storage quota on load
   warnIfStorageHigh();
@@ -417,7 +431,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Listen for task events from undo system
-  window.addEventListener('taskhub:taskRestored', (e) => {
+  window.addEventListener('kantrack:taskRestored', (e) => {
     const task = state.notesData.find(t => t.id === e.detail.taskId);
     if (task && !task.deleted) {
       const noteElement = createNoteElement(task);
@@ -428,14 +442,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  window.addEventListener('taskhub:taskRemoved', (e) => {
+  window.addEventListener('kantrack:taskRemoved', (e) => {
     const noteElement = document.querySelector(`[data-id="${e.detail.taskId}"]`);
     if (noteElement) {
       noteElement.remove();
     }
   });
 
-  window.addEventListener('taskhub:taskUpdated', (e) => {
+  window.addEventListener('kantrack:taskUpdated', (e) => {
     const task = state.notesData.find(t => t.id === e.detail.taskId);
     if (!task) return;
 
