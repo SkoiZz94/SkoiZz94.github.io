@@ -138,6 +138,11 @@ export async function deleteNote(id, addToHistory = true) {
     if (window.updateColumnCounts) {
       window.updateColumnCounts();
     }
+
+    // Update trash count badge
+    if (window.updateTrashCount) {
+      window.updateTrashCount();
+    }
   }
 }
 

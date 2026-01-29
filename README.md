@@ -9,7 +9,7 @@ It provides interactive tools, training resources, and curated references, all o
 
 The **home page** (`index.html`) acts as the main entry point with navigation buttons to all sections:
 
-- **TaskHub** → `pages/taskhub.html`
+- **KanTrack** → `pages/kantrack.html`
 - **WIM Calculator** → `pages/wincalc.html`
 - **Trainings** → `pages/trainingsindex.html`
 - **Entertainment DB** → External link
@@ -22,18 +22,18 @@ Each section has its own purpose and supporting assets (HTML, CSS, JS, JSON, and
 ## Folder Breakdown
 
 - **`pages/`** → Contains the main HTML files for all sections
-  - `taskhub.html` → TaskHub: Task management with kanban board, notebook, clocks, timers, and export
+  - `kantrack.html` → KanTrack: Task management with kanban board, notebook, clocks, timers, and export
   - `wincalc.html` → Work In Motion (WIM) calculator with form and results
   - `trainingsindex.html` → Training modules hub (Linux, Python, CyberArk)
   - `usefulstuff.html` → Curated list of external resources
 
 - **`styles/`** → All CSS files for styling the website
   - Modern glassmorphism dark theme with blur effects
-  - Separate stylesheets for each page (e.g., `taskhub-styles.css`, `wincalc-styles.css`)
+  - Separate stylesheets for each page (e.g., `kantrack-styles.css`, `wincalc-styles.css`)
 
 - **`scripts/`** → JavaScript files powering interactivity
-  - `taskhub.js` → Main entry point for TaskHub (ES modules)
-  - `modules/` → Modular JS files for TaskHub functionality
+  - `kantrack.js` → Main entry point for KanTrack (ES modules)
+  - `kantrack-modules/` → Modular JS files for KanTrack functionality
   - `wincalc.js` → Handles calculator logic with holiday API integration
   - `cyberark.js` → Handles CyberArk quiz logic
 
@@ -48,7 +48,7 @@ Each section has its own purpose and supporting assets (HTML, CSS, JS, JSON, and
 
 ## Features
 
-### TaskHub
+### KanTrack
 - **Kanban Board**: Four columns (To Do, In Progress, On Hold, Done)
 - **Sub-Tasks**: Mini kanban boards within tasks
 - **Priority system**: None, Low, Medium, High with color-coded cards
@@ -61,13 +61,17 @@ Each section has its own purpose and supporting assets (HTML, CSS, JS, JSON, and
 - **History tracking**: All actions logged (created, moved, timer, priority, sub-tasks, tags)
 - **Export/Import**: HTML board export, PDF task export, ZIP notebook export
 - **IndexedDB**: Persistent image storage
-- **Task Tags**: Color-coded labels (Urgent, Review, User Story, Incident, Rollout)
-- **Tag Filtering**: Quick filter buttons to show tasks by tag
+- **Task Tags**: Color-coded labels with 10 color options
+  - Create custom tags for your workflow
+  - Pin tags for reuse across tasks (pinned tags persist, unpinned are cleaned up)
+  - Maximum 5 tags per task
+- **Tag Filtering**: Dynamic filter buttons based on pinned tags
 - **Due Dates**: Set due dates with visual indicators (yellow for today, red for overdue)
 - **Search**: Real-time search across task titles and notes
 - **Undo/Redo**: Full undo/redo for all actions (Ctrl+Z, Ctrl+Y)
   - Create/delete tasks, title changes, priority, timer, tags, due dates, notes, moves
 - **Trash**: Deleted tasks recoverable from trash (max 20 items)
+- **Data Cleanup**: Automatic removal of duplicate/orphaned tasks on load
 
 ### WIM Calculator
 - Portuguese workday/holiday calculator
@@ -114,7 +118,7 @@ This project is fully documented in a modular way:
    cd <repo-folder>
    ```
 
-2. Start a local server (required for ES modules in TaskHub)
+2. Start a local server (required for ES modules in KanTrack)
    ```bash
    # Python 3
    python -m http.server 8000
@@ -127,6 +131,6 @@ This project is fully documented in a modular way:
 
 4. Navigate via the buttons to explore each tool and section
 
-> **Note**: TaskHub uses ES modules which require HTTP serving. Opening `index.html` directly via `file://` will cause module loading errors. Other pages (WIM Calculator, Trainings) work without a server.
+> **Note**: KanTrack uses ES modules which require HTTP serving. Opening `index.html` directly via `file://` will cause module loading errors. Other pages (WIM Calculator, Trainings) work without a server.
 
 ---

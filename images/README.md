@@ -13,7 +13,23 @@ This folder contains image assets used across the project for branding and UI el
 
 ---
 
-### 2. `quiz.png`
+### 2. `kantrack_logo.png`
+- **Purpose**: KanTrack application logo
+- **Usage**:
+  - `index.html` - displayed as button image for KanTrack navigation
+  - `pages/kantrack.html` - displayed in the top header bar next to the navigation buttons
+- **Styling**: CSS sets height to 44px with auto width, using `object-fit: contain`
+
+---
+
+### 3. `bingeable_logo.png`
+- **Purpose**: Bingeable (Entertainment DB) application logo
+- **Usage**: `index.html` - displayed as button image for Entertainment DB navigation
+- **Styling**: Fits within the navigation button using `object-fit: contain`
+
+---
+
+### 4. `quiz.png`
 - **Purpose**: Logo/icon for the CyberArk Quiz training module
 - **Usage**: `cyberarktraining.html` - displayed at the top of the quiz page
 

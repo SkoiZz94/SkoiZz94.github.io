@@ -40,67 +40,50 @@ The overall design uses an **Inspired glassmorphism** aesthetic:
 
 ---
 
-### 2. `taskhub-styles.css`
+### 2. KanTrack Styles (`kantrack/` folder)
 
-**Purpose**: Full TaskHub styling with kanban board, notebook, modals, clocks, and priorities
+**Purpose**: Full KanTrack styling, organized into modular files for maintainability.
 
-**Key Elements**:
-- **Board Layout**:
-  - `.kanban-board` - 4-column grid (responsive: 2 on tablet, 1 on mobile)
-  - `.column` - Glassmorphism panels with unique tints per column
-- **Task Cards**:
-  - `.note` - Draggable cards with priority color coding
-  - `.priority-low/medium/high` - Left border + background tint
-  - `.priority-display` - Priority label on cards
-  - `.worked-time` - Timer display
-  - `.timestamp` - Creation date
-- **Sub-Tasks**:
-  - `.sub-kanban-header` - Collapsible section header
-  - `.sub-kanban-board` - Mini kanban within task modal
-  - `.sub-task` - Sub-task cards with 2-line title limit
-- **Modals**:
-  - `.modal` - Full-screen overlay with blur
-  - `.modal-content` - Glassmorphism panel
-  - `.notes-editor` - Plain text editor area
-  - `.priority-controls` - Priority button group
-  - `.timer-controls` - Time add/subtract buttons
-  - `.history-list` - Action history with color-coded types
-- **Image Viewer**:
-  - `.image-modal` - Full-screen image display
-  - `.image-controls` - Zoom buttons
-  - `.image-container` - Centered image with pan support
-- **Notebook Sidebar**:
-  - `.notebook-sidebar` - Collapsible sidebar (400px width)
-  - `.notebook-tree` - Folder/page tree structure
-  - `.page-modal` - Note page editor modal
-- **Clocks**:
-  - `.clock` - Timezone clock cards
-  - `.chronometer-controls` - Start/pause/reset buttons
-  - `.clock-add-button` - Add new clock button
-- **Quick Menus**:
-  - `.quick-time-menu` - Floating time adjustment menu
-  - `.quick-priority-menu` - Floating priority selector
-- **Tags**:
-  - `.task-tags` - Tag container on task cards
-  - `.task-tag` - Individual tag chip with color
-  - `.tag-selector` - Tag picker in modal
-  - `.tag-filter-btn` - Tag filter buttons with color-coded states
-- **Due Dates**:
-  - `.task-due-date` - Due date display on cards
-  - `.due-date-today` - Yellow styling for tasks due today
-  - `.due-date-overdue` - Red styling with pulse animation
-  - `.task-due-today` - Yellow border on task cards due today
-  - `.task-overdue` - Red border on overdue task cards
-- **Search & Filters**:
-  - `.search-wrapper` - Search input with icon
-  - `.tag-filters` - Container for tag filter buttons
-- **Undo/Redo & Trash**:
-  - `.undo-redo-controls` - Undo/redo button group
-  - `.trash-toggle` - Trash panel toggle button
-  - `.trash-panel` - Slide-out trash panel
-- **Notifications**:
-  - `.notification-container` - Toast notification stack
-  - `.notification` - Individual toast with icon
+**File Structure**:
+```
+styles/kantrack/
+├── base.css        # Variables, reset, layout, board, columns, notes, buttons
+├── components.css  # Clocks, modals, sub-kanban, history, timers, priority
+├── features.css    # Notebook, search, notifications, tags, due dates, trash
+└── responsive.css  # All media queries for responsive design
+```
+
+#### `base.css`
+- **CSS Variables**: Colors, spacing, typography
+- **Reset & Body**: Base styles and dark background
+- **Header Bar**: `.top-header`, `.header-left`, `.header-right`, `.header-action-btn`
+- **Board Layout**: `.kanban-board` (4-column grid), `.column` (glassmorphism panels)
+- **Task Cards**: `.note`, `.priority-low/medium/high`, `.worked-time`, `.timestamp`
+- **Controls**: Input fields, buttons, control rows
+
+#### `components.css`
+- **Clocks**: `.clock`, `.chronometer-controls`, `.clock-add-button`
+- **Modals**: `.modal`, `.modal-content`, `.notes-editor`
+- **Sub-Tasks**: `.sub-kanban-header`, `.sub-kanban-board`, `.sub-task`
+- **Priority**: `.priority-controls`, `.quick-priority-menu`
+- **Timer**: `.timer-controls`, `.quick-time-menu`
+- **History**: `.history-list` with color-coded action types
+- **Image Viewer**: `.image-modal`, `.image-controls`, `.image-container`
+
+#### `features.css`
+- **Notebook Sidebar**: `.notebook-sidebar`, `.notebook-tree`, `.page-modal`
+- **Search**: `.search-wrapper`, `.controls-row-search`
+- **Notifications**: `.notification-container`, `.notification`
+- **Tags**: `.task-tags`, `.task-tag`, `.tag-selector`, `.tag-filter-btn`
+  - Dynamic tag colors using CSS variables (`--tag-color`, `--tag-bg`)
+- **Due Dates**: `.task-due-date`, `.due-date-today`, `.due-date-overdue`
+- **Trash**: `.trash-panel`, `.trash-item`, `.trash-toggle`
+
+#### `responsive.css`
+- **Desktop** (>1200px): Full 4-column board
+- **Tablet** (≤1024px): 2-column board, stacked controls
+- **Mobile** (≤768px): Single column, full-width sidebar, touch-optimized
+- **Small Mobile** (≤480px): Compact modal layouts
 
 ---
 

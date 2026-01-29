@@ -177,7 +177,7 @@ export function validateTitle(title) {
  */
 export function debugLog(...args) {
   if (DEBUG) {
-    console.log('[TaskHub Debug]', ...args);
+    console.log('[KanTrack Debug]', ...args);
   }
 }
 
@@ -186,6 +186,6 @@ export function debugLog(...args) {
  */
 export function debugWarn(...args) {
   if (DEBUG) {
-    console.warn('[TaskHub Warning]', ...args);
+    console.warn('[KanTrack Warning]', ...args);
   }
 }

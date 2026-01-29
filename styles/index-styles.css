@@ -67,7 +67,7 @@ button {
     line-height: 1;
     transition: all 0.3s ease;
     width: 100%; /* Make buttons fill their grid cell */
-    height: 50px;
+    height: 90px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -84,6 +84,19 @@ button:hover {
 
 button:active {
     transform: scale(0.98);
+}
+
+/* Logo Button Styles */
+.logo-btn {
+    padding: 10px;
+    height: 90px;
+}
+
+.logo-btn img {
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
 }
 
 /* Home Button Styles (If needed) */

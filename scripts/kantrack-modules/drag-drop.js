@@ -5,6 +5,7 @@ import { draggedItem, setDraggedItem } from './state.js';
 import { saveNotesToLocalStorage } from './storage.js';
 import { updateNoteColumn } from './tasks.js';
 import { sortColumnByPriority } from './sorting.js';
+import { applyFilters } from './search.js';
 
 // Reference setter for draggedItem (used by tasks.js)
 export function setDraggedItemRef(item) {
@@ -30,6 +31,9 @@ export function setupDragAndDrop() {
 
         setDraggedItem(null);
         saveNotesToLocalStorage();
+
+        // Update column counts
+        applyFilters();
       }
     });
   });
@@ -98,6 +102,9 @@ export function enableTouchDrag(noteEl, openTaskModalFn) {
         sortColumnByPriority(newColumnId);
 
         saveNotesToLocalStorage();
+
+        // Update column counts
+        applyFilters();
       }
     } else {
       // It was a tap - open the modal
